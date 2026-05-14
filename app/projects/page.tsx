@@ -185,9 +185,9 @@ export default function ProjectsPage() {
                           <>
                             <div className="fixed inset-0 z-10" onClick={() => setOpenMenu(null)} />
                             <div className="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-lg border border-gray-100 z-20 py-1 w-40">
-                              <Link href="/pricing" onClick={() => setOpenMenu(null)}
+                              <Link href="/quotation" onClick={() => setOpenMenu(null)}
                                 className="flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 transition-colors">
-                                <Eye size={12} /> ดูและแก้ไข
+                                <Eye size={12} /> ดูใบเสนอราคา
                               </Link>
                               <button
                                 onClick={() => { setDeleteConfirm(p.id); setOpenMenu(null) }}

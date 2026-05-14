@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import {
   TrendingUp, TrendingDown, Calculator, FolderOpen,
   AlertTriangle, CheckCircle, Clock, Zap, BarChart3,
@@ -14,18 +15,6 @@ import { getDashboardStats, getProjects } from '@/lib/storage'
 import type { StoredProject } from '@/lib/storage'
 import { PROJECT_TYPE_LABELS } from '@/lib/types'
 import type { ProjectStatus } from '@/lib/types'
-
-// ─── Mock monthly revenue (would come from Sheets in production) ──────────────
-
-const MONTHLY = [
-  { month: 'ม.ค.', revenue: 380000, cost: 240000, profit: 140000 },
-  { month: 'ก.พ.', revenue: 420000, cost: 265000, profit: 155000 },
-  { month: 'มี.ค.', revenue: 390000, cost: 248000, profit: 142000 },
-  { month: 'เม.ย.', revenue: 510000, cost: 312000, profit: 198000 },
-  { month: 'พ.ค.', revenue: 480000, cost: 295000, profit: 185000 },
-  { month: 'มิ.ย.', revenue: 560000, cost: 340000, profit: 220000 },
-  { month: 'ก.ค.', revenue: 620000, cost: 375000, profit: 245000 },
-]
 
 const STATUS_CONFIG: Record<ProjectStatus, { label: string; color: string; bg: string }> = {
   QUOTE:        { label: 'ใบเสนอราคา', color: '#2196F3', bg: '#E3F2FD' },
@@ -83,13 +72,33 @@ const PIE_TYPES = [
 ]
 
 export default function Dashboard() {
+  const router = useRouter()
   const [stats, setStats] = useState({ totalProjects: 0, activeProjects: 0, completedProjects: 0, revenue: 0, profit: 0, avgMargin: 0, lowStockCount: 0, unreadNoti: 0 })
   const [projects, setProjects] = useState<StoredProject[]>([])
+  const [allProjects, setAllProjects] = useState<StoredProject[]>([])
 
   useEffect(() => {
     setStats(getDashboardStats())
-    setProjects(getProjects().slice(0, 5))
+    const all = getProjects()
+    setAllProjects(all)
+    setProjects(all.slice(0, 5))
   }, [])
+
+  // ─── Monthly chart — real data from projects grouped by month ───────────────
+  const MONTHLY = (() => {
+    const now = new Date()
+    return Array.from({ length: 6 }, (_, i) => {
+      const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1)
+      const label = d.toLocaleDateString('th-TH', { month: 'short' })
+      const monthProjects = allProjects.filter(p => {
+        const pd = new Date(p.createdAt)
+        return pd.getFullYear() === d.getFullYear() && pd.getMonth() === d.getMonth() && p.status !== 'CANCELLED'
+      })
+      const revenue = monthProjects.reduce((s, p) => s + p.sellingPrice, 0)
+      const cost    = monthProjects.reduce((s, p) => s + p.netCost, 0)
+      return { month: label, revenue, cost, profit: revenue - cost }
+    })
+  })()
 
   // Build pie data from actual projects
   const byType = PIE_TYPES.map(t => ({
@@ -139,7 +148,7 @@ export default function Dashboard() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="font-semibold text-primary">Revenue & Profit</h2>
-              <p className="text-xs text-gray-400">7 เดือนล่าสุด (ตัวอย่าง)</p>
+              <p className="text-xs text-gray-400">6 เดือนล่าสุด (จากข้อมูลจริง)</p>
             </div>
             <Activity size={16} className="text-accent" />
           </div>
@@ -224,7 +233,8 @@ export default function Dashboard() {
                 ) : projects.map(p => {
                   const st = STATUS_CONFIG[p.status]
                   return (
-                    <tr key={p.id} className="cursor-pointer" onClick={() => {}}>
+                    <tr key={p.id} className="cursor-pointer hover:bg-accent/5 transition-colors"
+                      onClick={() => router.push('/quotation')}>
                       <td className="font-medium text-primary max-w-[140px] truncate">{p.projectName}</td>
                       <td className="text-gray-500 hidden sm:table-cell">{p.customerName}</td>
                       <td className="text-center">

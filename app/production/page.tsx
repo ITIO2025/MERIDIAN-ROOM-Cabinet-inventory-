@@ -65,7 +65,7 @@ export default function ProductionPage() {
         <div className="glass-card rounded-2xl p-12 text-center">
           <Warehouse size={40} className="text-gray-200 mx-auto mb-3" />
           <p className="text-gray-400 font-medium">ไม่มีงานในกระบวนการผลิต</p>
-          <p className="text-sm text-gray-300 mt-1">เปลี่ยนสถานะโปรเจกต์เป็น &ldquo;อนุมัติแล้ว&rdquo; เพื่อเริ่มกระบวนการผลิต</p>
+          <p className="text-sm text-gray-300 mt-1">เปลี่ยนสถานะโปรเจกต์เป็น &ldquo;ยืนยันแล้ว&rdquo; เพื่อเริ่มกระบวนการผลิต</p>
           <Link href="/projects" className="inline-flex items-center gap-2 mt-4 px-4 py-2 border border-accent text-accent text-sm font-medium rounded-xl">
             ดูโปรเจกต์ทั้งหมด
           </Link>
