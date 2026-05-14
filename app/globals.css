@@ -1,0 +1,137 @@
+@import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-primary: #111111;
+  --color-secondary: #1E1E1E;
+  --color-accent: #C6A969;
+  --color-accent-muted: rgba(198,169,105,0.15);
+  --color-surface: #F7F7F7;
+  --color-success: #00A86B;
+  --color-warning: #FFB800;
+  --color-danger: #E53935;
+}
+
+* { box-sizing: border-box; }
+
+html {
+  font-family: 'Prompt', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: #F7F7F7;
+  color: #111111;
+  font-family: 'Prompt', sans-serif;
+}
+
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: #F0F0F0; }
+::-webkit-scrollbar-thumb { background: #C6A969; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #A8904F; }
+
+/* ─── Selection ─── */
+::selection { background: rgba(198,169,105,0.25); color: #111; }
+
+/* ─── Focus ─── */
+:focus-visible { outline: 2px solid #C6A969; outline-offset: 2px; }
+
+/* ─── Input Reset ─── */
+input, select, textarea {
+  font-family: 'Prompt', sans-serif;
+}
+
+/* ─── Glass Card ─── */
+.glass-card {
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(198,169,105,0.15);
+}
+
+/* ─── Gold Gradient ─── */
+.gold-gradient {
+  background: linear-gradient(135deg, #C6A969 0%, #D4BB85 50%, #A8904F 100%);
+}
+
+.gold-text {
+  background: linear-gradient(135deg, #C6A969, #D4BB85);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Animated Shimmer ─── */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #F0F0F0 25%, #E8E8E8 50%, #F0F0F0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* ─── KPI Pulse ─── */
+@keyframes kpi-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(198,169,105,0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(198,169,105,0); }
+}
+
+.kpi-pulse {
+  animation: kpi-pulse 2s infinite;
+}
+
+/* ─── Table ─── */
+.premium-table thead tr th {
+  background: #111111;
+  color: #C6A969;
+  font-weight: 500;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 10px 14px;
+}
+
+.premium-table tbody tr {
+  border-bottom: 1px solid #F0F0F0;
+  transition: background 0.15s;
+}
+
+.premium-table tbody tr:hover {
+  background: rgba(198,169,105,0.05);
+}
+
+.premium-table tbody tr td {
+  padding: 10px 14px;
+  font-size: 0.85rem;
+}
+
+/* ─── Sidebar active ─── */
+.nav-item-active {
+  background: rgba(198,169,105,0.1);
+  border-left: 3px solid #C6A969;
+}
+
+/* ─── Input Focus Glow ─── */
+.input-premium:focus {
+  border-color: #C6A969 !important;
+  box-shadow: 0 0 0 3px rgba(198,169,105,0.15);
+}
+
+/* ─── Number Input ─── */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  opacity: 1;
+}
+
+/* ─── Print ─── */
+@media print {
+  .no-print { display: none !important; }
+  body { background: white; }
+}
