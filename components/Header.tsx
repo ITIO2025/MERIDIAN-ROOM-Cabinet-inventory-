@@ -55,10 +55,10 @@ export default function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-gray-100 px-4 md:px-6 py-3">
+    <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-gray-100/80 px-4 md:px-6 py-3">
       <div className="flex items-center justify-between">
-        {/* Mobile spacer (hamburger is fixed) */}
-        <div className="w-10 md:w-0" />
+        {/* Mobile spacer — matches hamburger button width (p-2 + Menu 20px) */}
+        <div className="w-10 md:hidden" />
 
         {/* Right Side */}
         <div className="flex items-center gap-2">

@@ -96,6 +96,11 @@ function NavLink({ item, collapsed }: { item: typeof NAV_ITEMS[0]; collapsed: bo
 function DesktopSidebar() {
   const [collapsed, setCollapsed] = useState(false)
 
+  // Sync CSS variable so AppShell's sidebar-main margin stays tight
+  useEffect(() => {
+    document.documentElement.dataset.sidebarCollapsed = collapsed ? '1' : '0'
+  }, [collapsed])
+
   return (
     <aside className={clsx(
       'fixed left-0 top-0 h-full z-40 flex-col transition-all duration-300',
