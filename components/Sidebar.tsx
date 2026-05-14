@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react'
 import {
   LayoutDashboard, Calculator, FolderOpen, FileText,
   Settings, ChevronLeft, ChevronRight, BarChart3,
-  Warehouse, Package, Users, TrendingUp, Menu, X,
+  Warehouse, Package, Users, TrendingUp, Menu, X, Wand2,
 } from 'lucide-react'
 import clsx from 'clsx'
 
@@ -52,9 +52,10 @@ const NAV_ITEMS = [
   { href: '/analytics',   label: 'วิเคราะห์',    icon: BarChart3,       group: 'insight' },
   { href: '/production',  label: 'การผลิต',      icon: Warehouse,       group: 'insight' },
   { href: '/stock',       label: 'คลังวัสดุ',    icon: Package,         group: 'insight' },
-  { href: '/customers',   label: 'ลูกค้า',       icon: Users,           group: 'manage' },
-  { href: '/profit',      label: 'กำไร & Margin', icon: TrendingUp,     group: 'manage' },
-  { href: '/settings',    label: 'ตั้งค่า',      icon: Settings,        group: 'manage' },
+  { href: '/customers',      label: 'ลูกค้า',         icon: Users,     group: 'manage' },
+  { href: '/profit',         label: 'กำไร & Margin',  icon: TrendingUp, group: 'manage' },
+  { href: '/settings',       label: 'ตั้งค่า',        icon: Settings,  group: 'manage' },
+  { href: '/settings/theme', label: 'Theme Studio',   icon: Wand2,     group: 'manage' },
 ]
 
 const GROUP_LABELS: Record<string, string> = { main: 'หลัก', insight: 'วิเคราะห์', manage: 'จัดการ' }
@@ -103,10 +104,11 @@ function DesktopSidebar() {
 
   return (
     <aside className={clsx(
-      'fixed left-0 top-0 h-full z-40 flex-col transition-all duration-300',
-      'bg-primary text-white shadow-xl hidden md:flex',
+      'fixed left-0 top-0 h-full z-40 flex-col transition-all duration-300 hidden md:flex',
+      'text-white shadow-xl',
       collapsed ? 'w-16' : 'w-60'
-    )}>
+    )}
+    style={{ background: 'var(--theme-sidebar-bg, #111111)', borderRight: '1px solid var(--theme-sidebar-border)' }}>
       {/* Logo */}
       <div className={clsx('flex items-center gap-3 px-4 py-5 border-b border-white/10', collapsed && 'justify-center px-2')}>
         <LogoMark size={32} />
@@ -147,8 +149,14 @@ function DesktopSidebar() {
       </div>
 
       {!collapsed && (
-        <div className="px-4 py-2 border-t border-white/5">
-          <p className="text-[9px] text-white/15 text-center">MERIDIAN ROOM v2.0 · 2026</p>
+        <div className="px-3 py-2 border-t border-white/5 space-y-1">
+          {/* Theme Studio shortcut */}
+          <Link href="/settings/theme"
+            className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-white/5 transition-colors group">
+            <Wand2 size={13} className="text-accent/70 group-hover:text-accent transition-colors" />
+            <span className="text-[10px] text-white/30 group-hover:text-white/60 transition-colors">Theme Studio</span>
+          </Link>
+          <p className="text-[9px] text-white/15 text-center pb-1">MERIDIAN ROOM v2.0 · 2026</p>
         </div>
       )}
     </aside>
@@ -192,9 +200,10 @@ function MobileSidebar() {
       {/* Drawer */}
       <aside className={clsx(
         'md:hidden fixed left-0 top-0 h-full w-72 z-50 flex flex-col',
-        'bg-primary text-white shadow-2xl transition-transform duration-300',
+        'text-white shadow-2xl transition-transform duration-300',
         open ? 'translate-x-0' : '-translate-x-full'
-      )}>
+      )}
+      style={{ background: 'var(--theme-sidebar-bg, #111111)', borderRight: '1px solid var(--theme-sidebar-border)' }}>
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-5 border-b border-white/10">
           <div className="flex items-center gap-3">
