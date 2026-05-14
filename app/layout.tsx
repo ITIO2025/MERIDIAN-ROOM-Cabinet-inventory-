@@ -1,9 +1,8 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
-import Sidebar from '@/components/Sidebar'
-import Header from '@/components/Header'
 import AuthProvider from '@/components/AuthProvider'
 import { ToastProvider } from '@/context/ToastContext'
+import AppShell from '@/components/AppShell'
 
 export const metadata: Metadata = {
   title: 'MERIDIAN ROOM AI — Smart Built-In Pricing Engine',
@@ -30,14 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="bg-surface font-prompt antialiased">
         <AuthProvider>
           <ToastProvider>
-            <div className="flex min-h-screen">
-              <Sidebar />
-              {/* Main Content — offset for sidebar (desktop: 240px, mobile: 0) */}
-              <main className="flex-1 md:ml-60 transition-all duration-300 flex flex-col min-h-screen w-full">
-                <Header />
-                <div className="flex-1">{children}</div>
-              </main>
-            </div>
+            <AppShell>{children}</AppShell>
           </ToastProvider>
         </AuthProvider>
       </body>

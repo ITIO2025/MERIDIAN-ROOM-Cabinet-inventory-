@@ -16,9 +16,13 @@ function LoginForm() {
   const [showPass, setShowPass] = useState(false)
   const [loading, setLoading] = useState(false)
   const [loginError, setLoginError] = useState('')
+  const [redirecting, setRedirecting] = useState(false)
 
   useEffect(() => {
-    if (status === 'authenticated') router.replace(callbackUrl)
+    if (status === 'authenticated') {
+      setRedirecting(true)
+      router.replace(callbackUrl)
+    }
   }, [status, router, callbackUrl])
 
   const handleCredentials = async (e: React.FormEvent) => {
@@ -29,14 +33,12 @@ function LoginForm() {
     setLoading(false)
     if (result?.error) {
       setLoginError('อีเมลหรือรหัสผ่านไม่ถูกต้อง')
-    } else if (result?.ok) {
-      router.replace(callbackUrl)
     }
   }
 
   const handleGoogle = () => signIn('google', { callbackUrl })
 
-  if (status === 'loading') {
+  if (status === 'loading' || redirecting) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-primary">
         <Loader2 size={32} className="text-accent animate-spin" />
