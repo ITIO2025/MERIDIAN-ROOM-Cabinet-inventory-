@@ -280,9 +280,19 @@ export function calculatePricing(input: CabinetInput): PricingResult {
   const panels = generatePanels(input)
 
   // ─── Board Counts ───
-  const mainPanels = panels.filter(p => p.boardType === input.boardType)
-  const backPanels = panels.filter(p => p.boardType === input.backBoardType && p.boardType !== input.boardType)
-  const otherPanels = panels.filter(p => p.boardType !== input.boardType && p.boardType !== input.backBoardType)
+  // Separate by BOTH boardType AND thickness to avoid merging back panels with main panels
+  // when boardType === backBoardType (e.g. both MDF) but thicknesses differ (18mm vs 9mm)
+  const mainPanels = panels.filter(p =>
+    p.boardType === input.boardType && p.thickness === input.boardThickness
+  )
+  const backPanels = panels.filter(p =>
+    p.boardType === input.backBoardType && p.thickness === input.backBoardThickness &&
+    !(p.boardType === input.boardType && p.thickness === input.boardThickness)
+  )
+  const otherPanels = panels.filter(p =>
+    !(p.boardType === input.boardType && p.thickness === input.boardThickness) &&
+    !(p.boardType === input.backBoardType && p.thickness === input.backBoardThickness)
+  )
 
   const mainAreaSqm = mainPanels.reduce((s, p) => s + (p.width * p.height / 1_000_000) * p.quantity, 0) * input.quantity
   const backAreaSqm = backPanels.concat(otherPanels).reduce((s, p) => s + (p.width * p.height / 1_000_000) * p.quantity, 0) * input.quantity
@@ -428,12 +438,8 @@ export function calculatePricing(input: CabinetInput): PricingResult {
 // ─── Format Currency ──────────────────────────────────────────────────────────
 
 export function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('th-TH', {
-    style: 'currency',
-    currency: 'THB',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value)
+  if (!value || isNaN(value)) return '฿0'
+  return `฿${Math.round(value).toLocaleString('th-TH')}`
 }
 
 export function formatNumber(value: number, decimals = 2): string {
