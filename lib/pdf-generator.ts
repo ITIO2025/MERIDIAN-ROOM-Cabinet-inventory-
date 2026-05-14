@@ -119,7 +119,7 @@ export async function generateQuotationPDF(result: PricingResult): Promise<void>
   doc.text(result.input.projectName || 'Untitled Project', rx + 3, y + 11)
   setFont(7, 'normal', C.gray)
   doc.text(`Type: ${result.input.projectType}`, rx + 3, y + 17)
-  doc.text(`Size: ${result.input.width} x ${result.input.height} x ${result.input.depth} mm`, rx + 3, y + 22)
+  doc.text(`Size: ${result.input.width} x ${result.input.height} x ${result.input.depth} cm`, rx + 3, y + 22)
   doc.text(`Qty: ${result.input.quantity} unit(s)  |  Install: ${result.input.installationType}`, rx + 3, y + 27)
 
   y += 38

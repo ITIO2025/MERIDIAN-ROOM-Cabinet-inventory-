@@ -213,7 +213,10 @@ function QuotationPreview({ project }: { project: StoredProject }) {
       <style>{`
         @media print {
           .no-print { display: none !important; }
-          body { background: white !important; }
+          nav, aside, header { display: none !important; }
+          main { margin: 0 !important; padding: 0 !important; }
+          body { background: white !important; margin: 0 !important; }
+          * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
           @page { margin: 1cm; size: A4 portrait; }
         }
       `}</style>
