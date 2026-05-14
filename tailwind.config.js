@@ -24,6 +24,10 @@ module.exports = {
         primary: {
           DEFAULT: 'rgb(var(--tw-primary) / <alpha-value>)',
         },
+        secondary: {
+          DEFAULT: 'var(--theme-sidebar-bg, #1E1E1E)',
+          light:   '#2A2A2A',
+        },
         accent: {
           DEFAULT: 'rgb(var(--tw-accent)       / <alpha-value>)',
           light:   'rgb(var(--tw-accent-light)  / <alpha-value>)',

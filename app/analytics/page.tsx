@@ -10,7 +10,28 @@ import type { StoredProject } from '@/lib/storage'
 import { PROJECT_TYPE_LABELS } from '@/lib/types'
 import clsx from 'clsx'
 
-const COLORS = ['#C6A969','#111111','#00A86B','#FFB800','#E53935','#7C3AED','#0EA5E9']
+// ── Live theme color hook ─────────────────────────────────────────────────────
+function useThemeColors() {
+  const [c, setC] = useState({ accent: '#C6A969', border: '#F0F0F0', text: '#6B7280', cardBg: '#FFFFFF' })
+  useEffect(() => {
+    const update = () => {
+      const cs = getComputedStyle(document.documentElement)
+      setC({
+        accent:  cs.getPropertyValue('--color-accent').trim()     || '#C6A969',
+        border:  cs.getPropertyValue('--theme-border').trim()     || '#F0F0F0',
+        text:    cs.getPropertyValue('--theme-text-muted').trim() || '#6B7280',
+        cardBg:  cs.getPropertyValue('--theme-card').trim()       || '#FFFFFF',
+      })
+    }
+    update()
+    const obs = new MutationObserver(() => { setTimeout(update, 0) })
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'style'] })
+    return () => obs.disconnect()
+  }, [])
+  return c
+}
+
+const STATIC_COLORS = ['#4B5563','#00A86B','#FFB800','#E53935','#7C3AED','#0EA5E9']
 
 function StatCard({ label, value, sub, icon: Icon, color }: {
   label: string; value: string; sub?: string; icon: React.ElementType; color: string
@@ -30,6 +51,7 @@ function StatCard({ label, value, sub, icon: Icon, color }: {
 }
 
 export default function AnalyticsPage() {
+  const tc = useThemeColors()
   const [projects, setProjects] = useState<StoredProject[]>([])
 
   useEffect(() => { setProjects(getProjects()) }, [])
@@ -66,7 +88,7 @@ export default function AnalyticsPage() {
     { label: '<15% (เสี่ยง)',    count: active.filter(p => p.margin < 15).length,             fill: '#E53935' },
     { label: '15–25% (ต่ำ)',    count: active.filter(p => p.margin >= 15 && p.margin < 25).length, fill: '#FFB800' },
     { label: '25–35% (ดี)',     count: active.filter(p => p.margin >= 25 && p.margin < 35).length, fill: '#00A86B' },
-    { label: '>35% (ยอดเยี่ยม)', count: active.filter(p => p.margin >= 35).length,             fill: '#C6A969' },
+    { label: '>35% (ยอดเยี่ยม)', count: active.filter(p => p.margin >= 35).length,             fill: tc.accent },
   ]
 
   const topProjects = [...active].sort((a, b) => b.sellingPrice - a.sellingPrice).slice(0, 5)
@@ -110,11 +132,11 @@ export default function AnalyticsPage() {
               {byType.length > 0 ? (
                 <ResponsiveContainer width="100%" height={220}>
                   <BarChart data={byType} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                    <YAxis tickFormatter={fmtK} tick={{ fontSize: 11 }} />
-                    <Tooltip formatter={(v: number) => fmt(v)} labelStyle={{ fontWeight: 600 }} />
-                    <Bar dataKey="revenue" name="รายได้" fill="#C6A969" radius={[6,6,0,0]} />
+                    <CartesianGrid strokeDasharray="3 3" stroke={tc.border} strokeOpacity={0.6} />
+                    <XAxis dataKey="name" tick={{ fontSize: 11, fill: tc.text }} />
+                    <YAxis tickFormatter={fmtK} tick={{ fontSize: 11, fill: tc.text }} />
+                    <Tooltip formatter={(v: number) => fmt(v)} labelStyle={{ fontWeight: 600 }} contentStyle={{ background: tc.cardBg, border: `1px solid ${tc.border}`, borderRadius: 8, fontSize: 11 }} />
+                    <Bar dataKey="revenue" name="รายได้" fill={tc.accent} radius={[6,6,0,0]} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -129,9 +151,9 @@ export default function AnalyticsPage() {
                 <ResponsiveContainer width="100%" height={220}>
                   <PieChart>
                     <Pie data={byStatus} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
-                      {byStatus.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                      {byStatus.map((_, i) => <Cell key={i} fill={i === 0 ? tc.accent : STATIC_COLORS[i % STATIC_COLORS.length]} />)}
                     </Pie>
-                    <Tooltip />
+                    <Tooltip contentStyle={{ background: tc.cardBg, border: `1px solid ${tc.border}`, borderRadius: 8, fontSize: 11 }} />
                   </PieChart>
                 </ResponsiveContainer>
               ) : (

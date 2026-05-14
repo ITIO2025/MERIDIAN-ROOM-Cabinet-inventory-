@@ -70,12 +70,13 @@ function NavLink({ item, collapsed }: { item: typeof NAV_ITEMS[0]; collapsed: bo
     <Link
       href={item.href}
       title={item.label}
+      style={isActive ? { boxShadow: '0 4px 16px rgb(var(--tw-accent) / 0.35), 0 1px 4px rgb(var(--tw-accent) / 0.20)' } : undefined}
       className={clsx(
         'flex items-center gap-3 px-2 py-2.5 rounded-xl mb-0.5 transition-all duration-200 group relative',
         collapsed ? 'justify-center' : '',
         isActive
           ? 'bg-accent/20 text-accent border-l-[3px] border-accent pl-[5px]'
-          : 'text-white/60 hover:bg-white/5 hover:text-white'
+          : 'text-white/60 hover:bg-white/5 hover:text-white hover:shadow-[0_2px_10px_rgba(255,255,255,0.06)]'
       )}
     >
       <Icon size={18} className={clsx('flex-shrink-0', isActive && 'text-accent')} />

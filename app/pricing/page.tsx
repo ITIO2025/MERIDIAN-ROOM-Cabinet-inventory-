@@ -363,22 +363,22 @@ function PricingContent() {
     <div className="flex flex-col" style={{ height: 'calc(100vh - 57px)', overflow: 'hidden', background: '#F7F5F2' }}>
 
       {/* ── Top Context Bar ── */}
-      <div className="flex-shrink-0 flex items-center justify-between px-5 py-2.5 bg-white/80 backdrop-blur-md border-b border-black/[0.05] z-10">
-        <div className="flex items-center gap-3 min-w-0">
+      <div className="flex-shrink-0 flex items-center gap-3 px-5 py-2.5 bg-white/80 backdrop-blur-md border-b border-black/[0.05] z-10">
+        <div className="flex items-center gap-3 flex-1 min-w-0">
           <div className="w-7 h-7 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
             <Calculator size={13} className="text-accent" />
           </div>
-          <div className="min-w-0">
-            <p className="text-xs font-semibold text-primary truncate max-w-[180px]">
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-semibold text-primary truncate">
               {input.projectName || 'โปรเจกต์ใหม่'}
             </p>
-            <p className="text-[10px] text-gray-400">{PROJECT_TYPE_LABELS[input.projectType]}</p>
+            <p className="text-[10px] text-gray-400 truncate">{PROJECT_TYPE_LABELS[input.projectType]}</p>
           </div>
           {autoCalc && result && (
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="flex items-center gap-1 text-[10px] text-success bg-success/8 px-2 py-1 rounded-full"
+              className="flex-shrink-0 flex items-center gap-1 text-[10px] text-success bg-success/8 px-2 py-1 rounded-full"
             >
               <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
               Auto
@@ -387,7 +387,7 @@ function PricingContent() {
         </div>
 
         {/* View Mode + Actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0">
           <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1">
             {([['clean', Eye, 'Preview'], ['technical', Grid, 'Technical']] as const).map(([mode, Icon, lbl]) => (
               <button key={mode} onClick={() => setViewMode(mode)}

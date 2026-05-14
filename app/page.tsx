@@ -16,6 +16,36 @@ import type { StoredProject } from '@/lib/storage'
 import { PROJECT_TYPE_LABELS } from '@/lib/types'
 import type { ProjectStatus } from '@/lib/types'
 
+// ── Hook: reads live CSS variables, refreshes on data-theme change ─────────────
+function useThemeColors() {
+  const [colors, setColors] = useState({
+    accent: '#C6A969',
+    success: '#00A86B',
+    border: '#F0F0F0',
+    text: '#6B7280',
+    cardBg: '#FFFFFF',
+  })
+  useEffect(() => {
+    const update = () => {
+      const cs = getComputedStyle(document.documentElement)
+      const get = (v: string) => cs.getPropertyValue(v).trim()
+      setColors({
+        accent:  get('--color-accent')  || '#C6A969',
+        success: '#00A86B',
+        border:  get('--theme-border')  || '#F0F0F0',
+        text:    get('--theme-text-muted') || '#6B7280',
+        cardBg:  get('--theme-card')    || '#FFFFFF',
+      })
+    }
+    update()
+    // Defer observer callbacks so setState never fires during an active render cycle
+    const obs = new MutationObserver(() => { setTimeout(update, 0) })
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'style'] })
+    return () => obs.disconnect()
+  }, [])
+  return colors
+}
+
 const STATUS_CONFIG: Record<ProjectStatus, { label: string; color: string; bg: string }> = {
   QUOTE:        { label: 'ใบเสนอราคา', color: '#2196F3', bg: '#E3F2FD' },
   CONFIRMED:    { label: 'ยืนยันแล้ว',  color: '#FF9800', bg: '#FFF3E0' },
@@ -64,15 +94,17 @@ const TooltipContent = ({ active, payload, label }: any) => {
   )
 }
 
-const PIE_TYPES = [
-  { key: 'WARDROBE', color: '#C6A969' },
-  { key: 'KITCHEN',  color: '#111111' },
-  { key: 'WALK_IN',  color: '#4CAF50' },
-  { key: 'TV_CABINET', color: '#2196F3' },
+// PIE_TYPES — accent slot filled dynamically from useThemeColors
+const PIE_TYPE_KEYS = [
+  { key: 'WARDROBE',   colorSlot: 'accent'  },
+  { key: 'KITCHEN',    colorSlot: 'static',  color: '#4B5563' },
+  { key: 'WALK_IN',    colorSlot: 'static',  color: '#4CAF50' },
+  { key: 'TV_CABINET', colorSlot: 'static',  color: '#2196F3' },
 ]
 
 export default function Dashboard() {
   const router = useRouter()
+  const tc = useThemeColors()
   const [stats, setStats] = useState({ totalProjects: 0, activeProjects: 0, completedProjects: 0, revenue: 0, profit: 0, avgMargin: 0, lowStockCount: 0, unreadNoti: 0 })
   const [projects, setProjects] = useState<StoredProject[]>([])
   const [allProjects, setAllProjects] = useState<StoredProject[]>([])
@@ -100,11 +132,11 @@ export default function Dashboard() {
     })
   })()
 
-  // Build pie data from actual projects
-  const byType = PIE_TYPES.map(t => ({
+  // Build pie data from actual projects — accent slot uses live theme color
+  const byType = PIE_TYPE_KEYS.map(t => ({
     name: PROJECT_TYPE_LABELS[t.key as keyof typeof PROJECT_TYPE_LABELS] ?? t.key,
     value: projects.filter(p => p.projectType === t.key).length,
-    color: t.color,
+    color: t.colorSlot === 'accent' ? tc.accent : (t.color ?? '#999'),
   })).filter(t => t.value > 0)
   if (byType.length === 0) byType.push({ name: 'ไม่มีข้อมูล', value: 1, color: '#E0E0E0' })
 
@@ -128,7 +160,7 @@ export default function Dashboard() {
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6">
         <KPICard label="ยอดขายรวม" value={`฿${(stats.revenue / 1000).toFixed(0)}k`}
-          sub="ทุกสถานะ" icon={DollarSign} color="#C6A969" />
+          sub="ทุกสถานะ" icon={DollarSign} color={tc.accent} />
         <KPICard label="กำไรรวม" value={`฿${(stats.profit / 1000).toFixed(0)}k`}
           sub={`Margin ${stats.avgMargin.toFixed(1)}%`} icon={TrendingUp}
           trend={stats.avgMargin >= 35 ? '+ดี' : 'ต่ำ'} trendUp={stats.avgMargin >= 35} color="#00A86B" />
@@ -156,20 +188,20 @@ export default function Dashboard() {
             <AreaChart data={MONTHLY} margin={{ top: 5, right: 5, bottom: 0, left: 0 }}>
               <defs>
                 <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#C6A969" stopOpacity={0.2} />
-                  <stop offset="95%" stopColor="#C6A969" stopOpacity={0} />
+                  <stop offset="5%" stopColor={tc.accent} stopOpacity={0.25} />
+                  <stop offset="95%" stopColor={tc.accent} stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="profitGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#00A86B" stopOpacity={0.2} />
-                  <stop offset="95%" stopColor="#00A86B" stopOpacity={0} />
+                  <stop offset="5%" stopColor={tc.success} stopOpacity={0.2} />
+                  <stop offset="95%" stopColor={tc.success} stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#F5F5F5" />
-              <XAxis dataKey="month" tick={{ fontSize: 11, fontFamily: 'Prompt' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={v => `${v / 1000}k`} />
+              <CartesianGrid strokeDasharray="3 3" stroke={tc.border} strokeOpacity={0.6} />
+              <XAxis dataKey="month" tick={{ fontSize: 11, fontFamily: 'Prompt', fill: tc.text }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 10, fill: tc.text }} axisLine={false} tickLine={false} tickFormatter={v => `${v / 1000}k`} />
               <Tooltip content={<TooltipContent />} />
-              <Area type="monotone" dataKey="revenue" name="ยอดขาย" stroke="#C6A969" fill="url(#revGrad)" strokeWidth={2} dot={false} />
-              <Area type="monotone" dataKey="profit" name="กำไร" stroke="#00A86B" fill="url(#profitGrad)" strokeWidth={2} dot={false} />
+              <Area type="monotone" dataKey="revenue" name="ยอดขาย" stroke={tc.accent} fill="url(#revGrad)" strokeWidth={2} dot={false} />
+              <Area type="monotone" dataKey="profit" name="กำไร" stroke={tc.success} fill="url(#profitGrad)" strokeWidth={2} dot={false} />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -188,7 +220,7 @@ export default function Dashboard() {
               <Pie data={byType} dataKey="value" cx="50%" cy="50%" innerRadius={40} outerRadius={65} paddingAngle={3}>
                 {byType.map((e, i) => <Cell key={i} fill={e.color} />)}
               </Pie>
-              <Tooltip formatter={(v: any) => [v, 'งาน']} contentStyle={{ fontFamily: 'Prompt', fontSize: 11 }} />
+              <Tooltip formatter={(v: any) => [v, 'งาน']} contentStyle={{ fontFamily: 'Prompt', fontSize: 11, background: tc.cardBg, border: `1px solid ${tc.border}`, borderRadius: 8, color: tc.text }} />
             </PieChart>
           </ResponsiveContainer>
           <div className="space-y-1.5 mt-1">
