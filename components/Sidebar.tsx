@@ -68,7 +68,7 @@ const GROUPS = ['main', 'insight', 'manage'] as const
 const MODES: { id: ThemeId; icon: React.ElementType; label: string }[] = [
   { id: 'light',    icon: Sun,      label: 'Light' },
   { id: 'dark',     icon: Moon,     label: 'Dark'  },
-  { id: 'midnight', icon: MoonStar, label: 'Night' },
+  { id: 'night', icon: MoonStar, label: 'Night' },
 ]
 
 function ModeToggle({ collapsed }: { collapsed: boolean }) {
