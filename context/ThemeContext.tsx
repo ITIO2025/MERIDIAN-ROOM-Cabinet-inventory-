@@ -34,7 +34,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
         setPrefs(p => ({ ...p, theme: 'dark' }))
       }
-    } catch { /* ignore */ }
+    } catch (e) {
+      console.warn('[ThemeContext] failed to load prefs:', e)
+    }
     setMounted(true)
   }, [])
 
@@ -42,7 +44,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!mounted) return
     applyToDOM(prefs)
-    try { localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(prefs)) } catch { /* ignore */ }
+    try { localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(prefs)) } catch (e) { console.warn('[ThemeContext] failed to load prefs:', e) }
   }, [prefs, mounted])
 
   const setTheme    = useCallback((id: ThemeId)     => setPrefs(p => ({ ...p, theme: id, accentHex: '' })), [])
@@ -51,7 +53,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const setDensity  = useCallback((d: DensityMode)  => setPrefs(p => ({ ...p, density: d })), [])
   const setAccentHex = useCallback((hex: string)    => setPrefs(p => ({ ...p, accentHex: hex })), [])
   const resetPrefs   = useCallback(() => {
-    try { localStorage.removeItem(THEME_STORAGE_KEY) } catch { /* ignore */ }
+    try { localStorage.removeItem(THEME_STORAGE_KEY) } catch (e) { console.warn('[ThemeContext] failed to load prefs:', e) }
     setPrefs(DEFAULT_PREFS)
   }, [])
 

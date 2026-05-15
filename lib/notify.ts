@@ -32,7 +32,11 @@ export function getLineUserId(): string {
 export function getLinePrefs(): LineNotifyPrefs {
   if (typeof window === 'undefined') return DEFAULT_PREFS
   const saved = localStorage.getItem('line_notify_prefs')
-  return saved ? { ...DEFAULT_PREFS, ...JSON.parse(saved) } : DEFAULT_PREFS
+  try {
+    return saved ? { ...DEFAULT_PREFS, ...JSON.parse(saved) } : DEFAULT_PREFS
+  } catch {
+    return DEFAULT_PREFS
+  }
 }
 
 export function getSheetsUrl(): string {
@@ -57,15 +61,19 @@ export async function sendLine(message: string): Promise<boolean> {
   const token = getLineToken()
   if (!token) return false
   const userId = getLineUserId()
+  const ctrl = new AbortController()
+  const timer = setTimeout(() => ctrl.abort(), 8000)
   try {
     const res = await fetch('/api/line-notify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token, userId: userId || undefined, message }),
+      signal: ctrl.signal,
     })
-    const data = await res.json()
-    return data.ok === true
+    clearTimeout(timer)
+    return res.ok
   } catch {
+    clearTimeout(timer)
     return false
   }
 }

@@ -317,8 +317,9 @@ function PricingContent() {
       margin: result.grossMarginPercent ?? 0,
       inputSnapshot: JSON.stringify(input),
     })
+    // save to localStorage first
     setSaved(true)
-    success('บันทึกโปรเจกต์แล้ว')
+    success('บันทึกแล้ว')
     setTimeout(() => setSaved(false), 3000)
     const prefs = getLinePrefs()
     if (prefs.newProject) {
@@ -330,7 +331,12 @@ function PricingContent() {
         margin: result.grossMarginPercent ?? 0,
       }))
     }
-    syncProjectToSheets({ ...sp })
+    // sync to sheets separately — non-blocking, don't let it crash save
+    try {
+      await syncProjectToSheets({ ...sp })
+    } catch (e) {
+      console.warn('[sheets-sync] failed (non-critical):', e)
+    }
   }, [result, input, success])
 
   const handlePDF = useCallback(async () => {
@@ -743,19 +749,19 @@ function PricingContent() {
                   </span>
                 </div>
                 <div className="space-y-1.5">
-                  {result.aiAnalysis.warnings.map((w, i) => (
+                  {(result.aiAnalysis.warnings ?? []).map((w, i) => (
                     <div key={i} className="flex items-start gap-1.5 text-[11px] text-orange-700 bg-orange-50/80 rounded-xl p-2.5">
                       <AlertTriangle size={10} className="flex-shrink-0 mt-0.5" />
                       <span className="leading-relaxed">{w.message}</span>
                     </div>
                   ))}
-                  {result.aiAnalysis.suggestions.map((s, i) => (
+                  {(result.aiAnalysis.suggestions ?? []).map((s, i) => (
                     <div key={i} className="flex items-start gap-1.5 text-[11px] text-blue-700 bg-blue-50/80 rounded-xl p-2.5">
                       <CheckCircle size={10} className="flex-shrink-0 mt-0.5" />
                       <span className="leading-relaxed"><strong>{s.title}:</strong> {s.description}</span>
                     </div>
                   ))}
-                  {result.aiAnalysis.warnings.length === 0 && result.aiAnalysis.suggestions.length === 0 && (
+                  {(result.aiAnalysis.warnings ?? []).length === 0 && (result.aiAnalysis.suggestions ?? []).length === 0 && (
                     <p className="text-[11px] text-success flex items-center gap-1.5 p-2">
                       <CheckCircle size={10} /> Margin ดี ไม่มีข้อแนะนำ
                     </p>
@@ -772,10 +778,10 @@ function PricingContent() {
                 className="rounded-2xl border border-black/[0.05] bg-white p-3.5"
               >
                 <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2.5 flex items-center gap-1.5">
-                  <Package size={10} className="text-accent" /> BOQ ({result.boqItems.length} รายการ)
+                  <Package size={10} className="text-accent" /> BOQ ({(result.boqItems ?? []).length} รายการ)
                 </p>
                 <div className="max-h-40 overflow-y-auto space-y-1">
-                  {result.boqItems.map(item => (
+                  {(result.boqItems ?? []).map(item => (
                     <div key={item.id} className="flex items-center justify-between py-1 border-b border-black/[0.04] last:border-0">
                       <span className="text-[11px] text-gray-500 truncate pr-2">{item.description}</span>
                       <span className="text-[11px] font-semibold text-primary flex-shrink-0">{formatCurrency(item.totalPrice)}</span>
