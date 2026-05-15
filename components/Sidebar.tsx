@@ -6,7 +6,10 @@ import {
   LayoutDashboard, Calculator, FolderOpen, FileText,
   Settings, ChevronLeft, ChevronRight, BarChart3,
   Warehouse, Package, Users, TrendingUp, Menu, X, Wand2,
+  Sun, Moon, MoonStar,
 } from 'lucide-react'
+import { useTheme } from '@/context/ThemeContext'
+import type { ThemeId } from '@/lib/theme'
 import clsx from 'clsx'
 
 // ── Logo hook — reads from localStorage, refreshes on custom event ────────────
@@ -60,6 +63,58 @@ const NAV_ITEMS = [
 
 const GROUP_LABELS: Record<string, string> = { main: 'หลัก', insight: 'วิเคราะห์', manage: 'จัดการ' }
 const GROUPS = ['main', 'insight', 'manage'] as const
+
+// ── Mode Toggle ────────────────────────────────────────────────────────────────
+const MODES: { id: ThemeId; icon: React.ElementType; label: string }[] = [
+  { id: 'light',    icon: Sun,      label: 'Light' },
+  { id: 'dark',     icon: Moon,     label: 'Dark'  },
+  { id: 'midnight', icon: MoonStar, label: 'Night' },
+]
+
+function ModeToggle({ collapsed }: { collapsed: boolean }) {
+  const { prefs, setTheme } = useTheme()
+  const active = prefs.theme
+
+  if (collapsed) {
+    // Mini version: cycle through 3 modes on click
+    const currentIdx = MODES.findIndex(m => m.id === active)
+    const next = MODES[(currentIdx + 1) % MODES.length]
+    const Current = MODES[currentIdx]?.icon ?? Sun
+    return (
+      <button
+        title={`Switch to ${next.label}`}
+        onClick={() => setTheme(next.id)}
+        className="w-full flex items-center justify-center p-2 rounded-xl hover:bg-white/10 transition-colors"
+      >
+        <Current size={15} className="text-white/50" />
+      </button>
+    )
+  }
+
+  return (
+    <div className="flex items-center gap-0.5 p-1 rounded-xl bg-white/5 border border-white/10">
+      {MODES.map(({ id, icon: Icon, label }) => {
+        const isActive = active === id
+        return (
+          <button
+            key={id}
+            title={label}
+            onClick={() => setTheme(id)}
+            className={clsx(
+              'flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[11px] font-medium transition-all duration-200',
+              isActive
+                ? 'bg-accent text-primary shadow-sm'
+                : 'text-white/40 hover:text-white/80 hover:bg-white/10'
+            )}
+          >
+            <Icon size={12} />
+            <span>{label}</span>
+          </button>
+        )
+      })}
+    </div>
+  )
+}
 
 function NavLink({ item, collapsed }: { item: typeof NAV_ITEMS[0]; collapsed: boolean }) {
   const pathname = usePathname()
@@ -137,8 +192,9 @@ function DesktopSidebar() {
         ))}
       </nav>
 
-      {/* Collapse Toggle */}
-      <div className="p-3 border-t border-white/10">
+      {/* Mode Toggle + Collapse */}
+      <div className="p-3 border-t border-white/10 space-y-2">
+        <ModeToggle collapsed={collapsed} />
         <button
           onClick={() => setCollapsed(!collapsed)}
           className="w-full flex items-center justify-center p-2 rounded-xl hover:bg-white/5 text-white/40 hover:text-white transition-colors"
@@ -151,7 +207,6 @@ function DesktopSidebar() {
 
       {!collapsed && (
         <div className="px-3 py-2 border-t border-white/5 space-y-1">
-          {/* Theme Studio shortcut */}
           <Link href="/settings/theme"
             className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-white/5 transition-colors group">
             <Wand2 size={13} className="text-accent/70 group-hover:text-accent transition-colors" />
@@ -233,7 +288,8 @@ function MobileSidebar() {
           ))}
         </nav>
 
-        <div className="p-4 border-t border-white/10">
+        <div className="p-4 border-t border-white/10 space-y-3">
+          <ModeToggle collapsed={false} />
           <p className="text-[9px] text-white/20 text-center">MERIDIAN ROOM v2.0 · 2026</p>
         </div>
       </aside>
