@@ -512,6 +512,32 @@ html[data-sidebar-collapsed="1"] { --sidebar-w: 4rem; }
 }
 
 /* ════════════════════════════════════════════════════════════════
+   NOTION-STYLE UNIVERSAL TEXT SYSTEM
+   text-gray-* → semantic theme tokens for ALL themes
+   so every theme gets proper contrast & on-brand color automatically.
+
+   Scale (mirrors Notion's text hierarchy):
+     gray-900 / 800 / 700  →  --theme-text        (body, headings — max contrast)
+     gray-600 / 500        →  --theme-text-muted   (labels, captions, secondary)
+     gray-400 / 300 / 200  →  --theme-text-subtle  (hints, timestamps, placeholders)
+════════════════════════════════════════════════════════════════ */
+.text-gray-900,
+.text-gray-800,
+.text-gray-700 { color: var(--theme-text)        !important; }
+
+.text-gray-600,
+.text-gray-500 { color: var(--theme-text-muted)  !important; }
+
+.text-gray-400,
+.text-gray-300,
+.text-gray-200 { color: var(--theme-text-subtle) !important; }
+
+/* Semantic utilities — use these going forward (shorter, intent-clear) */
+.text-default { color: var(--theme-text); }
+.text-muted   { color: var(--theme-text-muted); }
+.text-subtle  { color: var(--theme-text-subtle); }
+
+/* ════════════════════════════════════════════════════════════════
    DARK / DEEP THEME OVERRIDES
    — Override hardcoded Tailwind whites/grays for dark themes
 ════════════════════════════════════════════════════════════════ */
@@ -557,13 +583,6 @@ html[data-sidebar-collapsed="1"] { --sidebar-w: 4rem; }
   .bg-white {
     background-color: var(--theme-card) !important;
   }
-
-  /* Text */
-  .text-gray-700 { color: var(--theme-text) !important; }
-  .text-gray-600 { color: var(--theme-text) !important; }
-  .text-gray-500,
-  .text-gray-400 { color: var(--theme-text-muted) !important; }
-  .text-gray-300 { color: var(--theme-text-subtle) !important; }
 
   /* Inputs */
   input:not([type="range"]),

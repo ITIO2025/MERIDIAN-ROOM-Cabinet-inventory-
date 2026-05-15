@@ -44,10 +44,13 @@ module.exports = {
         warning: 'rgb(var(--tw-warning) / <alpha-value>)',
         danger:  'rgb(var(--tw-danger)  / <alpha-value>)',
         info:    'rgb(var(--tw-info)    / <alpha-value>)',
-        // Text
+        // Text — Notion-style semantic scale
         'theme-text':       'rgb(var(--tw-text)         / <alpha-value>)',
         'theme-text-muted': 'rgb(var(--tw-text-muted)   / <alpha-value>)',
         'theme-border':     'rgb(var(--tw-border)       / <alpha-value>)',
+        // Shorthand text tokens usable as text-muted, text-subtle, bg-muted/20 etc.
+        muted:  'rgb(var(--tw-text-muted)  / <alpha-value>)',
+        subtle: 'rgb(var(--tw-text-subtle) / <alpha-value>)',
       },
 
       // ── Shadows ───────────────────────────────────────────────────────
