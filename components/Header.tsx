@@ -1,12 +1,14 @@
 'use client'
 import { useSession, signOut } from 'next-auth/react'
-import { Bell, ChevronDown, LogOut, Settings, Shield, CheckCheck } from 'lucide-react'
+import { Bell, ChevronDown, LogOut, Settings, CheckCheck, Sun, Moon, MoonStar } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { ROLE_LABELS, ROLE_COLORS } from '@/lib/auth-users'
 import type { UserRole } from '@/types/next-auth'
 import { getNotifications, markAllRead } from '@/lib/storage'
 import type { StoredNotification } from '@/lib/storage'
+import { useTheme } from '@/context/ThemeContext'
+import type { ThemeId } from '@/lib/theme'
 import clsx from 'clsx'
 
 const NOTI_COLORS = {
@@ -31,6 +33,47 @@ function Panel({ className = '', children }: { className?: string; children: Rea
 // ── Divider ───────────────────────────────────────────────────────────────────
 function Divider() {
   return <div style={{ borderColor: 'var(--theme-border, #F0F0F0)' }} className="border-b" />
+}
+
+// ── Theme mode button group ───────────────────────────────────────
+const MODES: { id: ThemeId; icon: React.ElementType; label: string; tip: string }[] = [
+  { id: 'light',    icon: Sun,      label: 'Light',  tip: 'Light mode'   },
+  { id: 'dark',     icon: Moon,     label: 'Dark',   tip: 'Dark mode'    },
+  { id: 'midnight', icon: MoonStar, label: 'Night',  tip: 'Night mode'   },
+]
+
+function ModeToggle() {
+  const { prefs, setTheme } = useTheme()
+
+  // Only show if current theme is one of the 3 quick modes, or always show
+  const active = prefs.theme
+
+  return (
+    <div
+      className="flex items-center gap-0.5 px-1 py-1 rounded-xl"
+      style={{ background: 'var(--theme-hover, rgba(0,0,0,0.04))', border: '1px solid var(--theme-border)' }}
+    >
+      {MODES.map(({ id, icon: Icon, label, tip }) => {
+        const isActive = active === id
+        return (
+          <button
+            key={id}
+            title={tip}
+            onClick={() => setTheme(id)}
+            className={clsx(
+              'flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all duration-200',
+              isActive
+                ? 'bg-accent text-primary shadow-sm'
+                : 'text-muted hover:text-primary hover:bg-accent/10'
+            )}
+          >
+            <Icon size={13} />
+            <span className="hidden sm:inline">{label}</span>
+          </button>
+        )
+      })}
+    </div>
+  )
 }
 
 export default function Header() {
@@ -85,6 +128,8 @@ export default function Header() {
 
         {/* Right Side */}
         <div className="flex items-center gap-2">
+          {/* Mode toggle: Light / Dark / Night */}
+          <ModeToggle />
 
           {/* Notifications */}
           <div className="relative">
