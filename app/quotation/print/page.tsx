@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState, Suspense } from 'react'
 import type { PricingResult } from '@/lib/types'
-import { Loader2, Printer, ArrowLeft } from 'lucide-react'
+import { MdRefresh, MdPrint, MdArrowBack } from 'react-icons/md'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -259,14 +259,14 @@ function PrintPageInner() {
       <p className="text-sm">กรุณาคิดราคาในหน้า Pricing แล้วกดปุ่ม "พิมพ์"</p>
       <button onClick={() => window.close()}
         className="flex items-center gap-2 px-4 py-2 text-sm border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
-        <ArrowLeft size={14} /> ปิดหน้านี้
+        <MdArrowBack size={14} /> ปิดหน้านี้
       </button>
     </div>
   )
 
   if (!result) return (
     <div className="flex items-center justify-center min-h-screen">
-      <Loader2 size={28} className="animate-spin text-gray-300" />
+      <MdRefresh size={28} className="animate-spin text-gray-300" />
     </div>
   )
 
@@ -278,7 +278,7 @@ function PrintPageInner() {
           onClick={() => window.print()}
           className="flex items-center gap-2 px-4 py-2 bg-[#111111] text-white text-sm font-medium rounded-xl shadow-lg hover:bg-black transition-colors"
         >
-          <Printer size={14} /> พิมพ์ / บันทึก PDF
+          <MdPrint size={14} /> พิมพ์ / บันทึก PDF
         </button>
         <button
           onClick={() => window.close()}
@@ -318,7 +318,7 @@ export default function PrintPage() {
   return (
     <Suspense fallback={
       <div className="flex items-center justify-center min-h-screen">
-        <Loader2 size={28} className="animate-spin text-gray-300" />
+        <MdRefresh size={28} className="animate-spin text-gray-300" />
       </div>
     }>
       <PrintPageInner />

@@ -1,6 +1,6 @@
 'use client'
 import { createContext, useContext, useState, useCallback, useRef } from 'react'
-import { CheckCircle, AlertTriangle, XCircle, Info, X } from 'lucide-react'
+import { MdCheckCircle, MdWarning, MdCancel, MdInfo, MdClose } from 'react-icons/md'
 import clsx from 'clsx'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -36,10 +36,10 @@ export function useToast() {
 // ─── Toast Config ─────────────────────────────────────────────────────────────
 
 const TOAST_CONFIG: Record<ToastType, { icon: React.ElementType; bg: string; border: string; iconColor: string }> = {
-  success: { icon: CheckCircle, bg: 'bg-white', border: 'border-l-4 border-success', iconColor: 'text-success' },
-  error:   { icon: XCircle,     bg: 'bg-white', border: 'border-l-4 border-danger',  iconColor: 'text-danger' },
-  warning: { icon: AlertTriangle, bg: 'bg-white', border: 'border-l-4 border-warning', iconColor: 'text-warning' },
-  info:    { icon: Info,         bg: 'bg-white', border: 'border-l-4 border-info',    iconColor: 'text-info' },
+  success: { icon: MdCheckCircle, bg: 'bg-white', border: 'border-l-4 border-success', iconColor: 'text-success' },
+  error:   { icon: MdCancel,     bg: 'bg-white', border: 'border-l-4 border-danger',  iconColor: 'text-danger' },
+  warning: { icon: MdWarning, bg: 'bg-white', border: 'border-l-4 border-warning', iconColor: 'text-warning' },
+  info:    { icon: MdInfo,         bg: 'bg-white', border: 'border-l-4 border-info',    iconColor: 'text-info' },
 }
 
 // ─── Provider ─────────────────────────────────────────────────────────────────
@@ -91,7 +91,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 onClick={() => remove(t.id)}
                 className="flex-shrink-0 p-0.5 rounded-lg hover:bg-gray-100 transition-colors"
               >
-                <X size={13} className="text-gray-400" />
+                <MdClose size={13} className="text-gray-400" />
               </button>
             </div>
           )

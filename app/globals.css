@@ -56,6 +56,21 @@ html[data-theme="light"] {
   --theme-gradient-start: #2383E2;
   --theme-gradient-end:   #1870C8;
   --color-accent:         #2383E2;
+  --theme-header-bg:      rgba(255,255,255,0.92);
+  /* Sidebar text: dark on light sidebar (#F7F6F3) */
+  --sidebar-text:         rgba(55,53,47,0.90);
+  --sidebar-text-muted:   rgba(55,53,47,0.50);
+  --sidebar-text-subtle:  rgba(55,53,47,0.30);
+
+  /* ── Spacing tokens ── */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
 
   /* ── Layout ── */
   --sidebar-w: 15rem;
@@ -114,6 +129,10 @@ html[data-theme="dark"] {
   --theme-gradient-start: #529DCA;
   --theme-gradient-end:   #3680AF;
   --color-accent:         #529DCA;
+  --theme-header-bg:      rgba(25,25,25,0.95);
+  --sidebar-text:         rgba(255,255,255,0.92);
+  --sidebar-text-muted:   rgba(255,255,255,0.45);
+  --sidebar-text-subtle:  rgba(255,255,255,0.22);
 }
 
 /* ══ NOTION NIGHT THEME ═════════════════════════════════════════ */
@@ -158,6 +177,64 @@ html[data-theme="night"] {
   --theme-gradient-start: #3D9EDF;
   --theme-gradient-end:   #2382C0;
   --color-accent:         #3D9EDF;
+  --theme-header-bg:      rgba(10,10,10,0.97);
+  --sidebar-text:         rgba(235,235,235,0.92);
+  --sidebar-text-muted:   rgba(255,255,255,0.40);
+  --sidebar-text-subtle:  rgba(255,255,255,0.18);
+}
+
+/* ════════════════════════════════════════════════════════════════
+   DARK THEME — SYSTEM PREFERENCE FALLBACK
+   Activates dark vars for browsers that respect prefers-color-scheme
+   but where no explicit data-theme has been set (or light is not forced).
+════════════════════════════════════════════════════════════════ */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --tw-bg:           25  25  25;
+    --tw-surface:      40  40  40;
+    --tw-card:         37  37  37;
+    --tw-primary:      255 255 255;
+    --tw-accent:       82  157 202;
+    --tw-accent-light: 120 185 225;
+    --tw-accent-dark:  54  128 175;
+    --tw-success:      52  211 153;
+    --tw-warning:      251 191 36;
+    --tw-danger:       252 129 129;
+    --tw-info:         82  157 202;
+    --tw-text:         255 255 255;
+    --tw-text-muted:   155 155 155;
+    --tw-text-subtle:  96  96  96;
+    --tw-border:       55  55  55;
+    --tw-border-light: 40  40  40;
+
+    --theme-bg:             #191919;
+    --theme-surface:        #282828;
+    --theme-card:           #252525;
+    --theme-sidebar-bg:     #111111;
+    --theme-sidebar-border: rgba(255,255,255,0.06);
+    --theme-text:           #FFFFFF;
+    --theme-text-muted:     #9B9B9B;
+    --theme-text-subtle:    #606060;
+    --theme-border:         #373737;
+    --theme-border-light:   #282828;
+    --theme-input-bg:       #2F2F2F;
+    --theme-input-text:     #FFFFFF;
+    --theme-input-border:   #444444;
+    --theme-hover:          rgba(255,255,255,0.055);
+    --theme-active:         rgba(82,157,202,0.15);
+    --theme-glass:          rgba(37,37,37,0.92);
+    --theme-glass-border:   rgba(255,255,255,0.08);
+    --theme-overlay:        rgba(0,0,0,0.70);
+    --theme-shadow:         0 1px 6px rgba(0,0,0,0.35), 0 2px 16px rgba(0,0,0,0.25);
+    --theme-shadow-lg:      0 4px 24px rgba(0,0,0,0.50), 0 8px 32px rgba(0,0,0,0.35);
+    --theme-gradient-start: #529DCA;
+    --theme-gradient-end:   #3680AF;
+    --color-accent:         #529DCA;
+    --theme-header-bg:      rgba(25,25,25,0.95);
+    --sidebar-text:         rgba(255,255,255,0.92);
+    --sidebar-text-muted:   rgba(255,255,255,0.45);
+    --sidebar-text-subtle:  rgba(255,255,255,0.22);
+  }
 }
 
 /* ════════════════════════════════════════════════════════════════
@@ -336,16 +413,32 @@ html[data-sidebar-collapsed="1"] { --sidebar-w: 4rem; }
 html[data-theme="light"] aside {
   color: var(--theme-text) !important;
 }
-html[data-theme="light"] aside .text-white\/60 { color: rgba(55,53,47,0.55) !important; }
-html[data-theme="light"] aside .text-white { color: #37352F !important; }
-html[data-theme="light"] aside .text-white\/30 { color: rgba(55,53,47,0.35) !important; }
-html[data-theme="light"] aside .text-white\/15 { color: rgba(55,53,47,0.20) !important; }
-html[data-theme="light"] aside .border-white\/10 { border-color: rgba(55,53,47,0.10) !important; }
-html[data-theme="light"] aside .bg-white\/5 { background: rgba(55,53,47,0.04) !important; }
-html[data-theme="light"] aside .bg-white\/10 { background: rgba(55,53,47,0.06) !important; }
-html[data-theme="light"] aside .hover\:bg-white\/5:hover { background: rgba(55,53,47,0.04) !important; }
-html[data-theme="light"] aside .text-white\/40 { color: rgba(55,53,47,0.40) !important; }
-html[data-theme="light"] aside .text-white\/20 { color: rgba(55,53,47,0.25) !important; }
+/* ── Light theme sidebar: remap white/* utilities → warm-dark equivalents ── */
+/* Text */
+html[data-theme="light"] aside .text-white         { color: rgba(55,53,47,0.92) !important; }
+html[data-theme="light"] aside .text-white\/60      { color: rgba(55,53,47,0.58) !important; }
+html[data-theme="light"] aside .text-white\/50      { color: rgba(55,53,47,0.48) !important; }
+html[data-theme="light"] aside .text-white\/40      { color: rgba(55,53,47,0.40) !important; }
+html[data-theme="light"] aside .text-white\/30      { color: rgba(55,53,47,0.32) !important; }
+html[data-theme="light"] aside .text-white\/20      { color: rgba(55,53,47,0.22) !important; }
+html[data-theme="light"] aside .text-white\/15      { color: rgba(55,53,47,0.16) !important; }
+html[data-theme="light"] aside .text-white\/10      { color: rgba(55,53,47,0.10) !important; }
+/* Hover text */
+html[data-theme="light"] aside .hover\:text-white:hover      { color: rgba(55,53,47,0.92) !important; }
+html[data-theme="light"] aside .hover\:text-white\/80:hover  { color: rgba(55,53,47,0.75) !important; }
+html[data-theme="light"] aside .hover\:text-white\/60:hover  { color: rgba(55,53,47,0.58) !important; }
+/* Backgrounds */
+html[data-theme="light"] aside .bg-white\/5         { background: rgba(55,53,47,0.04) !important; }
+html[data-theme="light"] aside .bg-white\/10        { background: rgba(55,53,47,0.06) !important; }
+html[data-theme="light"] aside .hover\:bg-white\/5:hover  { background: rgba(55,53,47,0.04) !important; }
+html[data-theme="light"] aside .hover\:bg-white\/10:hover { background: rgba(55,53,47,0.07) !important; }
+/* Borders */
+html[data-theme="light"] aside .border-white\/10    { border-color: rgba(55,53,47,0.10) !important; }
+html[data-theme="light"] aside .border-white\/5     { border-color: rgba(55,53,47,0.06) !important; }
+/* Shadow with white channel → flip to dark */
+html[data-theme="light"] aside .hover\:shadow-\[0_2px_10px_rgba\(255\,255\,255\,0\.06\)\]:hover {
+  box-shadow: 0 2px 10px rgba(55,53,47,0.06) !important;
+}
 
 /* ════════════════════════════════════════════════════════════════
    SCROLLBAR
@@ -367,11 +460,8 @@ html[data-theme="light"] aside .text-white\/20 { color: rgba(55,53,47,0.25) !imp
 
 /* Glass card */
 .glass-card {
-  background: var(--theme-glass, rgba(255,255,255,0.88));
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--theme-glass-border, rgba(198,169,105,0.12));
-  transition: background 0.35s ease, border-color 0.35s ease;
+  background: var(--theme-card);
+  border: 1px solid var(--theme-border);
 }
 
 /* Theme-aware card */
@@ -403,6 +493,67 @@ html[data-theme="light"] aside .text-white\/20 { color: rgba(55,53,47,0.25) !imp
   background-clip: text;
 }
 
+/* ── Premium range-input styling ────────────────────────────────────────────
+   Applied to all <input type="range" class="range-premium"> elements.
+   Provides a consistent track + thumb across Chrome, Safari, Firefox.
+──────────────────────────────────────────────────────────────────────────── */
+input[type="range"].range-premium {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  outline: none;
+  cursor: pointer;
+  height: 6px;
+  border-radius: 999px;
+}
+
+/* Track — webkit (Chrome, Safari, Edge) */
+input[type="range"].range-premium::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--theme-border);
+}
+/* Track fill is applied via inline style on the element itself */
+
+/* Thumb — webkit */
+input[type="range"].range-premium::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgb(var(--tw-accent));
+  border: 2.5px solid var(--theme-card);
+  box-shadow: 0 1px 6px rgba(var(--tw-accent), 0.45), 0 1px 3px rgba(0,0,0,0.18);
+  margin-top: -5px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+input[type="range"].range-premium::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 2px 10px rgba(var(--tw-accent), 0.55);
+}
+input[type="range"].range-premium:active::-webkit-slider-thumb {
+  transform: scale(1.05);
+}
+
+/* Track — Firefox */
+input[type="range"].range-premium::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--theme-border);
+}
+
+/* Thumb — Firefox */
+input[type="range"].range-premium::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: rgb(var(--tw-accent));
+  border: 2px solid var(--theme-card);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.20);
+  cursor: pointer;
+}
+
 /* Theme-aware button */
 .btn-accent {
   background: linear-gradient(
@@ -428,6 +579,47 @@ html[data-theme="light"] aside .text-white\/20 { color: rgba(55,53,47,0.25) !imp
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
+
+/* ════════════════════════════════════════════════════════════════
+   MATERIAL DESIGN ELEVATION SHADOWS
+════════════════════════════════════════════════════════════════ */
+.elevation-1 { box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); }
+.elevation-2 { box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23); }
+.elevation-3 { box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23); }
+
+/* ════════════════════════════════════════════════════════════════
+   PAGE TRANSITION
+════════════════════════════════════════════════════════════════ */
+.page-enter { animation: pageEnter 0.2s ease-out; }
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   TYPOGRAPHY UTILITIES
+════════════════════════════════════════════════════════════════ */
+/* Stat number */
+.stat-number {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+/* Section header */
+.section-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--theme-text-muted);
+}
+
+/* ════════════════════════════════════════════════════════════════
+   MATERIAL DESIGN ICON
+════════════════════════════════════════════════════════════════ */
+.md-icon { display: inline-flex; align-items: center; justify-content: center; }
 
 /* ════════════════════════════════════════════════════════════════
    GLOW EFFECTS

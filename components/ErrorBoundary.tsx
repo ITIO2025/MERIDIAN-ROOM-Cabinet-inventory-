@@ -1,6 +1,6 @@
 'use client'
 import React from 'react'
-import { AlertTriangle, RefreshCw } from 'lucide-react'
+import { MdWarning, MdRefresh } from 'react-icons/md'
 
 interface State { hasError: boolean; error: Error | null }
 
@@ -28,7 +28,7 @@ export default class ErrorBoundary extends React.Component<
         <div className="min-h-screen flex items-center justify-center bg-[var(--theme-bg,#F7F7F7)] p-6">
           <div className="max-w-md w-full bg-white rounded-2xl shadow-lg border border-red-100 p-8 text-center">
             <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
-              <AlertTriangle size={28} className="text-red-500" />
+              <MdWarning size={28} className="text-red-500" />
             </div>
             <h2 className="text-lg font-bold text-gray-800 mb-2">เกิดข้อผิดพลาด</h2>
             <p className="text-sm text-gray-500 mb-1">ระบบพบปัญหาที่ไม่คาดคิด</p>
@@ -39,7 +39,7 @@ export default class ErrorBoundary extends React.Component<
               onClick={() => { this.setState({ hasError: false, error: null }); window.location.reload() }}
               className="flex items-center gap-2 mx-auto px-5 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-700 transition-colors"
             >
-              <RefreshCw size={14} />
+              <MdRefresh size={14} />
               รีโหลดหน้า
             </button>
           </div>

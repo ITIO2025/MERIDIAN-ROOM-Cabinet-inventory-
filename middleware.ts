@@ -1,13 +1,13 @@
-import { withAuth } from 'next-auth/middleware'
+import { withAuth, NextRequestWithAuth } from 'next-auth/middleware'
 import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
 import { ROUTE_PERMISSIONS } from '@/lib/auth-users'
 import type { UserRole } from '@/types/next-auth'
 
 export default withAuth(
-  function middleware(req) {
+  function middleware(req: NextRequestWithAuth) {
     const { pathname } = req.nextUrl
-    const token = (req as any).nextauth?.token
+    // Token is already verified by withAuth — use it directly
+    const token = req.nextauth.token
 
     if (!token) return NextResponse.redirect(new URL('/login', req.url))
 
@@ -21,7 +21,6 @@ export default withAuth(
     if (matchedRoute) {
       const allowed = ROUTE_PERMISSIONS[matchedRoute]
       if (!allowed.includes(userRole)) {
-        // Redirect to dashboard with access-denied message
         return NextResponse.redirect(new URL('/?access=denied', req.url))
       }
     }
@@ -32,6 +31,7 @@ export default withAuth(
     callbacks: {
       authorized: ({ token }) => !!token,
     },
+    secret: process.env.NEXTAUTH_SECRET ?? 'meridian-room-dev-secret-2026',
   }
 )
 

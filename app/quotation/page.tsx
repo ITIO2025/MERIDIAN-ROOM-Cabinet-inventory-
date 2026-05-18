@@ -1,11 +1,12 @@
 'use client'
 import { useState, useEffect } from 'react'
 import {
-  FileText, Download, Printer, Search, Plus, ChevronRight,
-  CheckCircle, MapPin, Phone, Building2, Filter, ImageIcon
-} from 'lucide-react'
+  MdDescription, MdDownload, MdPrint, MdSearch, MdAdd, MdChevronRight,
+  MdCheckCircle, MdLocationOn, MdPhone, MdBusiness, MdFilterList, MdImage,
+  MdDelete, MdClose, MdWarning,
+} from 'react-icons/md'
 import Link from 'next/link'
-import { getProjects, getStock } from '@/lib/storage'
+import { getProjects, getStock, deleteProject } from '@/lib/storage'
 import type { StoredProject, StoredStockItem } from '@/lib/storage'
 import { formatCurrency } from '@/lib/pricing-engine'
 import { STATUS_LABELS } from '@/lib/types'
@@ -37,11 +38,15 @@ function QuotationPreview({ project }: { project: StoredProject }) {
 
   useEffect(() => {
     const saved = typeof window !== 'undefined' ? localStorage.getItem('company_info') : null
-    if (saved) setCompany(JSON.parse(saved))
-    setLogoUrl(typeof window !== 'undefined' ? (localStorage.getItem('company_logo') ?? '') : '')
+    if (saved) { try { setCompany(JSON.parse(saved)) } catch { /* corrupt data – ignore */ } }
+    // Quotations print on white paper → always use light-mode logo
+    const readLogo = () =>
+      localStorage.getItem('company_logo_light') ||
+      localStorage.getItem('company_logo') || ''
+    setLogoUrl(typeof window !== 'undefined' ? readLogo() : '')
     setStockItems(getStock().filter(s => s.imageUrl))
 
-    const onLogoUpdate = () => setLogoUrl(localStorage.getItem('company_logo') ?? '')
+    const onLogoUpdate = () => setLogoUrl(readLogo())
     window.addEventListener('company-logo-updated', onLogoUpdate)
     return () => window.removeEventListener('company-logo-updated', onLogoUpdate)
   }, [])
@@ -56,11 +61,19 @@ function QuotationPreview({ project }: { project: StoredProject }) {
       <div className="flex items-center gap-2 mb-5 no-print">
         <button onClick={handlePrint}
           className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-50 transition-colors">
-          <Printer size={15} /> พิมพ์
+          <MdPrint size={15} /> พิมพ์
         </button>
         <Link href="/pricing"
-          className="flex items-center gap-2 px-4 py-2 gold-gradient text-primary text-sm font-semibold rounded-xl hover:shadow-gold transition-all">
-          <Download size={15} /> คิดราคาใหม่ + Export PDF
+          className="flex items-center gap-2 px-4 py-2.5 text-white text-sm font-semibold tracking-wider transition-all duration-200 hover:scale-105 active:scale-100"
+          style={{
+            background: '#1A1C1E',
+            borderRadius: '6px',
+            borderLeft: '3px solid #D4AF60',
+            boxShadow: '0 2px 8px rgba(26,28,30,0.3)',
+          }}
+          onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 4px 18px rgba(212,175,96,0.28)')}
+          onMouseLeave={e => (e.currentTarget.style.boxShadow = '0 2px 8px rgba(26,28,30,0.3)')}>
+          <MdDownload size={14} style={{ color: '#D4AF60' }} /> คิดราคาใหม่ + Export PDF
         </Link>
       </div>
 
@@ -87,9 +100,9 @@ function QuotationPreview({ project }: { project: StoredProject }) {
                 </div>
               </div>
               <div className="text-white/50 text-xs space-y-0.5 mt-3">
-                {company.address && <p className="flex items-center gap-1.5"><MapPin size={10} /> {company.address}</p>}
-                {company.phone && <p className="flex items-center gap-1.5"><Phone size={10} /> {company.phone}</p>}
-                {company.taxId && <p className="flex items-center gap-1.5"><Building2 size={10} /> เลขผู้เสียภาษี {company.taxId}</p>}
+                {company.address && <p className="flex items-center gap-1.5"><MdLocationOn size={10} /> {company.address}</p>}
+                {company.phone && <p className="flex items-center gap-1.5"><MdPhone size={10} /> {company.phone}</p>}
+                {company.taxId && <p className="flex items-center gap-1.5"><MdBusiness size={10} /> เลขผู้เสียภาษี {company.taxId}</p>}
               </div>
             </div>
             <div className="text-right">
@@ -160,7 +173,7 @@ function QuotationPreview({ project }: { project: StoredProject }) {
           {stockItems.length > 0 && (
             <div className="mb-6">
               <p className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold mb-3 flex items-center gap-2">
-                <ImageIcon size={11} /> วัสดุและส่วนประกอบ
+                <MdImage size={11} /> วัสดุและส่วนประกอบ
               </p>
               <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
                 {stockItems.map(item => (
@@ -190,7 +203,7 @@ function QuotationPreview({ project }: { project: StoredProject }) {
                 'กำหนดแล้วเสร็จภายใน 30-45 วันทำการหลังยืนยัน',
               ].map((note, i) => (
                 <li key={i} className="flex items-start gap-2 text-xs text-gray-600">
-                  <CheckCircle size={11} className="text-accent flex-shrink-0 mt-0.5" />
+                  <MdCheckCircle size={11} className="text-accent flex-shrink-0 mt-0.5" />
                   {note}
                 </li>
               ))}
@@ -225,10 +238,14 @@ function QuotationPreview({ project }: { project: StoredProject }) {
 }
 
 export default function QuotationPage() {
-  const [projects, setProjects] = useState<StoredProject[]>([])
-  const [search, setSearch] = useState('')
-  const [selected, setSelected] = useState<StoredProject | null>(null)
+  const [projects, setProjects]       = useState<StoredProject[]>([])
+  const [search, setSearch]           = useState('')
+  const [preview, setPreview]         = useState<StoredProject | null>(null)
   const [statusFilter, setStatusFilter] = useState<ProjectStatus | 'ALL'>('ALL')
+
+  // ── multi-select state ───────────────────────────────────────────
+  const [checkedIds, setCheckedIds]   = useState<Set<string>>(new Set())
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
   useEffect(() => { setProjects(getProjects()) }, [])
 
@@ -239,18 +256,42 @@ export default function QuotationPage() {
     return matchSearch && matchStatus
   })
 
-  if (selected) {
+  // ── selection helpers ────────────────────────────────────────────
+  const allChecked  = filtered.length > 0 && filtered.every(p => checkedIds.has(p.id))
+  const someChecked = filtered.some(p => checkedIds.has(p.id))
+
+  const toggleAll = () => {
+    if (allChecked) {
+      setCheckedIds(prev => { const n = new Set(prev); filtered.forEach(p => n.delete(p.id)); return n })
+    } else {
+      setCheckedIds(prev => { const n = new Set(prev); filtered.forEach(p => n.add(p.id)); return n })
+    }
+  }
+
+  const toggleOne = (id: string) =>
+    setCheckedIds(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n })
+
+  // ── delete confirmed ─────────────────────────────────────────────
+  const handleDelete = () => {
+    checkedIds.forEach(id => deleteProject(id))
+    setProjects(getProjects())
+    setCheckedIds(new Set())
+    setConfirmDelete(false)
+  }
+
+  // ── preview mode ─────────────────────────────────────────────────
+  if (preview) {
     return (
       <div className="p-4 md:p-6">
         <div className="flex items-center gap-3 mb-5 no-print">
-          <button onClick={() => setSelected(null)}
+          <button onClick={() => setPreview(null)}
             className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-primary transition-colors">
             ← กลับ
           </button>
-          <ChevronRight size={14} className="text-gray-300" />
-          <span className="text-sm font-semibold text-primary">{selected.projectName}</span>
+          <MdChevronRight size={14} className="text-gray-300" />
+          <span className="text-sm font-semibold text-primary">{preview.projectName}</span>
         </div>
-        <QuotationPreview project={selected} />
+        <QuotationPreview project={preview} />
       </div>
     )
   }
@@ -261,26 +302,81 @@ export default function QuotationPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-xl font-bold text-primary flex items-center gap-2">
-            <FileText size={22} className="text-accent" /> ใบเสนอราคา
+            <MdDescription size={22} className="text-accent" /> ใบเสนอราคา
           </h1>
           <p className="text-sm text-gray-400 mt-0.5">เลือกโปรเจกต์เพื่อดูและพิมพ์ใบเสนอราคา</p>
         </div>
         <Link href="/pricing"
           className="flex items-center gap-2 px-4 py-2 gold-gradient text-primary text-sm font-semibold rounded-xl hover:shadow-gold transition-all">
-          <Plus size={16} /> คิดราคาและสร้างใบใหม่
+          <MdAdd size={16} /> คิดราคาและสร้างใบใหม่
         </Link>
       </div>
+
+      {/* ── Delete action bar (slides in when items are checked) ── */}
+      {someChecked && (
+        <div className="flex items-center justify-between px-4 py-3 rounded-xl border"
+          style={{ background: 'rgba(239,68,68,0.06)', borderColor: 'rgba(239,68,68,0.25)' }}>
+          <div className="flex items-center gap-2.5">
+            <div className="w-6 h-6 rounded-full bg-danger/10 flex items-center justify-center flex-shrink-0">
+              <MdDelete size={13} className="text-danger" />
+            </div>
+            <p className="text-sm font-semibold text-danger">
+              เลือกแล้ว {checkedIds.size} รายการ
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setCheckedIds(new Set())}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-500 hover:text-primary border border-gray-200 rounded-lg transition-colors">
+              <MdClose size={12} /> ยกเลิก
+            </button>
+            <button onClick={() => setConfirmDelete(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-danger hover:bg-red-600 rounded-lg transition-colors">
+              <MdDelete size={12} /> ลบรายการที่เลือก
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Confirm dialog ── */}
+      {confirmDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 w-80 mx-4">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-danger/10 flex items-center justify-center flex-shrink-0">
+                <MdWarning size={20} className="text-danger" />
+              </div>
+              <div>
+                <p className="font-bold text-primary text-sm">ยืนยันการลบ</p>
+                <p className="text-xs text-gray-400 mt-0.5">ลบ {checkedIds.size} รายการที่เลือก?</p>
+              </div>
+            </div>
+            <p className="text-xs text-gray-500 bg-gray-50 rounded-xl p-3 mb-4 leading-relaxed">
+              การลบจะไม่สามารถย้อนกลับได้ ใบเสนอราคาและข้อมูลโปรเจกต์จะหายถาวร
+            </p>
+            <div className="flex gap-2">
+              <button onClick={() => setConfirmDelete(false)}
+                className="flex-1 px-3 py-2.5 text-sm text-gray-600 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors font-medium">
+                ยกเลิก
+              </button>
+              <button onClick={handleDelete}
+                className="flex-1 px-3 py-2.5 text-sm text-white bg-danger hover:bg-red-600 rounded-xl transition-colors font-semibold">
+                ลบเลย
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-2">
         <div className="relative flex-1">
-          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <MdSearch size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input value={search} onChange={e => setSearch(e.target.value)}
             placeholder="ค้นหาชื่อโปรเจกต์ หรือลูกค้า..."
             className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-accent/30 bg-white" />
         </div>
         <div className="relative">
-          <Filter size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+          <MdFilterList size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
           <select value={statusFilter} onChange={e => setStatusFilter(e.target.value as ProjectStatus | 'ALL')}
             className="pl-8 pr-8 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-accent/30 bg-white appearance-none cursor-pointer">
             <option value="ALL">ทุกสถานะ</option>
@@ -294,11 +390,11 @@ export default function QuotationPage() {
       {/* Project List */}
       {filtered.length === 0 ? (
         <div className="glass-card rounded-2xl p-12 text-center">
-          <FileText size={40} className="text-gray-200 mx-auto mb-3" />
+          <MdDescription size={40} className="text-gray-200 mx-auto mb-3" />
           <p className="text-gray-400 font-medium">ไม่มีใบเสนอราคา</p>
           <p className="text-sm text-gray-300 mt-1">คิดราคาในหน้า "คิดราคา" แล้วกด "บันทึก" เพื่อเพิ่มโปรเจกต์</p>
           <Link href="/pricing" className="inline-flex items-center gap-2 mt-4 px-4 py-2 gold-gradient text-primary text-sm font-semibold rounded-xl">
-            <Plus size={14} /> เริ่มคิดราคา
+            <MdAdd size={14} /> เริ่มคิดราคา
           </Link>
         </div>
       ) : (
@@ -307,47 +403,70 @@ export default function QuotationPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50/60">
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">โปรเจกต์</th>
+                  {/* Select-all checkbox */}
+                  <th className="pl-4 pr-2 py-3 w-10">
+                    <input type="checkbox"
+                      checked={allChecked}
+                      ref={el => { if (el) el.indeterminate = !allChecked && someChecked }}
+                      onChange={toggleAll}
+                      className="w-4 h-4 rounded cursor-pointer accent-danger" />
+                  </th>
+                  <th className="text-left px-3 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">โปรเจกต์</th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide hidden sm:table-cell">ลูกค้า</th>
                   <th className="text-right px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide hidden md:table-cell">ราคาขาย</th>
                   <th className="text-center px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">สถานะ</th>
-                  <th className="px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide text-right">ใบเสนอราคา</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide text-right">ดูใบ</th>
                 </tr>
               </thead>
               <tbody>
-                {filtered.map(p => (
-                  <tr key={p.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-                    <td className="px-4 py-3.5">
-                      <p className="text-sm font-semibold text-primary leading-tight">{p.projectName}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">{p.id} · {new Date(p.createdAt).toLocaleDateString('th-TH')}</p>
-                    </td>
-                    <td className="px-4 py-3.5 hidden sm:table-cell">
-                      <p className="text-sm text-gray-700">{p.customerName}</p>
-                    </td>
-                    <td className="px-4 py-3.5 text-right hidden md:table-cell">
-                      <p className="text-sm font-semibold text-primary">{formatCurrency(p.sellingPrice)}</p>
-                      <p className={clsx('text-xs font-medium', p.margin >= 25 ? 'text-success' : p.margin >= 15 ? 'text-warning' : 'text-danger')}>
-                        Margin {p.margin.toFixed(1)}%
-                      </p>
-                    </td>
-                    <td className="px-4 py-3.5 text-center">
-                      <span className={clsx('text-xs px-2.5 py-1 rounded-full font-medium', STATUS_COLORS[p.status])}>
-                        {STATUS_LABELS[p.status]}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3.5 text-right">
-                      <button onClick={() => setSelected(p)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-accent/30 text-accent rounded-lg hover:bg-accent/5 transition-colors ml-auto">
-                        <FileText size={12} /> ดูใบเสนอราคา
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {filtered.map(p => {
+                  const isChecked = checkedIds.has(p.id)
+                  return (
+                    <tr key={p.id}
+                      className={clsx(
+                        'border-b border-gray-50 transition-colors',
+                        isChecked ? 'bg-danger/5' : 'hover:bg-gray-50/50'
+                      )}>
+                      {/* Checkbox */}
+                      <td className="pl-4 pr-2 py-3.5">
+                        <input type="checkbox" checked={isChecked} onChange={() => toggleOne(p.id)}
+                          className="w-4 h-4 rounded cursor-pointer accent-danger" />
+                      </td>
+                      <td className="px-3 py-3.5">
+                        <p className="text-sm font-semibold text-primary leading-tight">{p.projectName}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">{p.id} · {new Date(p.createdAt).toLocaleDateString('th-TH')}</p>
+                      </td>
+                      <td className="px-4 py-3.5 hidden sm:table-cell">
+                        <p className="text-sm text-gray-700">{p.customerName}</p>
+                      </td>
+                      <td className="px-4 py-3.5 text-right hidden md:table-cell">
+                        <p className="text-sm font-semibold text-primary">{formatCurrency(p.sellingPrice)}</p>
+                        <p className={clsx('text-xs font-medium', p.margin >= 25 ? 'text-success' : p.margin >= 15 ? 'text-warning' : 'text-danger')}>
+                          Margin {p.margin.toFixed(1)}%
+                        </p>
+                      </td>
+                      <td className="px-4 py-3.5 text-center">
+                        <span className={clsx('text-xs px-2.5 py-1 rounded-full font-medium', STATUS_COLORS[p.status])}>
+                          {STATUS_LABELS[p.status]}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3.5 text-right">
+                        <button onClick={() => setPreview(p)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-accent/30 text-accent rounded-lg hover:bg-accent/5 transition-colors ml-auto">
+                          <MdDescription size={12} /> ดู
+                        </button>
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
-          <div className="px-4 py-2.5 border-t border-gray-50 bg-gray-50/30">
+          <div className="px-4 py-2.5 border-t border-gray-50 bg-gray-50/30 flex items-center justify-between">
             <p className="text-xs text-gray-400">{filtered.length} รายการ</p>
+            {someChecked && (
+              <p className="text-xs text-danger font-medium">เลือกแล้ว {checkedIds.size} รายการ</p>
+            )}
           </div>
         </div>
       )}

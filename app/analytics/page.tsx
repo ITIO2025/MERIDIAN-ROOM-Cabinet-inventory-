@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { BarChart3, TrendingUp, TrendingDown, DollarSign, Target, Award } from 'lucide-react'
+import { MdBarChart, MdTrendingUp, MdAttachMoney, MdTrackChanges, MdEmojiEvents, MdCalendarToday } from 'react-icons/md'
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
@@ -96,29 +96,138 @@ export default function AnalyticsPage() {
   const fmt = (v: number) => v.toLocaleString('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 })
   const fmtK = (v: number) => v >= 1000000 ? `${(v/1000000).toFixed(1)}M` : v >= 1000 ? `${(v/1000).toFixed(0)}K` : String(v)
 
+  // ── Quarterly data ────────────────────────────────────────────────────────
+  const QUARTERS = [
+    { id: 'Q1', label: 'Q1', months: 'ม.ค.–มี.ค.',  range: [0, 2]  },
+    { id: 'Q2', label: 'Q2', months: 'เม.ย.–มิ.ย.', range: [3, 5]  },
+    { id: 'Q3', label: 'Q3', months: 'ก.ค.–ก.ย.',   range: [6, 8]  },
+    { id: 'Q4', label: 'Q4', months: 'ต.ค.–ธ.ค.',   range: [9, 11] },
+  ]
+
+  const currentYear = new Date().getFullYear()
+
+  const quarterlyData = QUARTERS.map(q => {
+    const qProjects = active.filter(p => {
+      const d = new Date(p.createdAt)
+      const m = d.getMonth()
+      const y = d.getFullYear()
+      return y === currentYear && m >= q.range[0] && m <= q.range[1]
+    })
+    const rev    = qProjects.reduce((s, p) => s + p.sellingPrice, 0)
+    const cost   = qProjects.reduce((s, p) => s + p.netCost, 0)
+    const profit = rev - cost
+    const margin = qProjects.length > 0 ? qProjects.reduce((s, p) => s + p.margin, 0) / qProjects.length : 0
+    return { name: q.id, months: q.months, count: qProjects.length, revenue: rev, cost, profit, margin }
+  })
+
+  const [qView, setQView] = useState<'all' | 'Q1' | 'Q2' | 'Q3' | 'Q4'>('all')
+
+  const qFiltered = qView === 'all' ? active : active.filter(p => {
+    const d = new Date(p.createdAt)
+    const m = d.getMonth()
+    const y = d.getFullYear()
+    const q = QUARTERS.find(q => q.id === qView)!
+    return y === currentYear && m >= q.range[0] && m <= q.range[1]
+  })
+
+  const qRevenue = qFiltered.reduce((s, p) => s + p.sellingPrice, 0)
+  const qProfit  = qFiltered.reduce((s, p) => s + (p.sellingPrice - p.netCost), 0)
+  const qMargin  = qFiltered.length > 0 ? qFiltered.reduce((s, p) => s + p.margin, 0) / qFiltered.length : 0
+
   return (
     <div className="p-4 md:p-6 space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-xl font-bold text-primary flex items-center gap-2">
-          <BarChart3 size={22} className="text-accent" /> วิเคราะห์ข้อมูล
-        </h1>
-        <p className="text-sm text-gray-400 mt-0.5">ภาพรวมธุรกิจจาก {active.length} โปรเจกต์ที่ใช้งาน</p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-xl font-bold text-primary flex items-center gap-2">
+            <MdBarChart size={22} className="text-accent" /> วิเคราะห์ข้อมูล
+          </h1>
+          <p className="text-sm text-gray-400 mt-0.5">
+            {qView === 'all' ? `ภาพรวมธุรกิจ ${active.length} โปรเจกต์` : `${qView} · ${QUARTERS.find(q=>q.id===qView)?.months} · ${qFiltered.length} โปรเจกต์`}
+          </p>
+        </div>
+
+        {/* Quarter Filter */}
+        <div className="flex items-center gap-1 bg-[var(--theme-card)] border border-[var(--theme-border)] rounded-xl p-1">
+          <button
+            onClick={() => setQView('all')}
+            className={clsx('flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all',
+              qView === 'all' ? 'bg-accent text-white shadow-sm' : 'text-muted hover:text-primary hover:bg-[var(--theme-hover)]'
+            )}
+          >
+            <MdCalendarToday size={11} /> ทั้งปี
+          </button>
+          {QUARTERS.map(q => (
+            <button key={q.id}
+              onClick={() => setQView(q.id as typeof qView)}
+              className={clsx('px-3 py-1.5 rounded-lg text-xs font-bold transition-all',
+                qView === q.id ? 'bg-accent text-white shadow-sm' : 'text-muted hover:text-primary hover:bg-[var(--theme-hover)]'
+              )}
+            >
+              {q.id}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* KPI Cards */}
+      {/* KPI Cards — reflect selected quarter */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="รายได้รวม" value={fmt(revenue)} icon={DollarSign} color="bg-accent/10 text-accent" />
-        <StatCard label="กำไรรวม"  value={fmt(profit)}  icon={TrendingUp}  color="bg-success/10 text-success" />
-        <StatCard label="Margin เฉลี่ย" value={`${avgMargin.toFixed(1)}%`} icon={Target}
-          sub={avgMargin >= 25 ? 'ดี' : avgMargin >= 15 ? 'ต่ำ' : 'ต้องปรับปรุง'}
-          color={avgMargin >= 25 ? 'bg-success/10 text-success' : avgMargin >= 15 ? 'bg-warning/10 text-warning' : 'bg-danger/10 text-danger'} />
-        <StatCard label="โปรเจกต์ทั้งหมด" value={String(active.length)} icon={Award} color="bg-primary/10 text-primary" />
+        <StatCard label="รายได้รวม"       value={fmt(qRevenue)} icon={MdAttachMoney} color="bg-accent/10 text-accent" />
+        <StatCard label="กำไรรวม"         value={fmt(qProfit)}  icon={MdTrendingUp}  color="bg-success/10 text-success" />
+        <StatCard label="Margin เฉลี่ย"   value={`${qMargin.toFixed(1)}%`} icon={MdTrackChanges}
+          sub={qMargin >= 25 ? 'ดี' : qMargin >= 15 ? 'ต่ำ' : 'ต้องปรับปรุง'}
+          color={qMargin >= 25 ? 'bg-success/10 text-success' : qMargin >= 15 ? 'bg-warning/10 text-warning' : 'bg-danger/10 text-danger'} />
+        <StatCard label="โปรเจกต์" value={String(qFiltered.length)} icon={MdEmojiEvents} color="bg-primary/10 text-primary" />
       </div>
+
+      {/* Quarterly Overview Chart */}
+      {active.length > 0 && (
+        <div className="glass-card rounded-2xl p-5">
+          <p className="font-semibold text-primary text-sm mb-1 flex items-center gap-2">
+            <MdCalendarToday size={14} className="text-accent" /> รายได้รายไตรมาส (ทั้งปี)
+          </p>
+          <p className="text-xs text-gray-400 mb-4">คลิกแถบด้านบนเพื่อกรองข้อมูล</p>
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={quarterlyData} margin={{ top: 0, right: 0, bottom: 0, left: 0 }} barGap={4}>
+              <CartesianGrid strokeDasharray="3 3" stroke={tc.border} strokeOpacity={0.6} />
+              <XAxis dataKey="name" tick={{ fontSize: 12, fill: tc.text, fontWeight: 600 }} />
+              <YAxis tickFormatter={fmtK} tick={{ fontSize: 11, fill: tc.text }} />
+              <Tooltip
+                formatter={(v: number, name: string) => [fmt(v), name === 'revenue' ? 'รายได้' : 'กำไร']}
+                contentStyle={{ background: tc.cardBg, border: `1px solid ${tc.border}`, borderRadius: 8, fontSize: 11 }}
+              />
+              <Legend formatter={(v) => v === 'revenue' ? 'รายได้' : 'กำไร'} />
+              <Bar dataKey="revenue" name="revenue" fill={tc.accent} radius={[6,6,0,0]}
+                onClick={(d) => setQView(d.name as typeof qView)} style={{ cursor: 'pointer' }}
+              />
+              <Bar dataKey="profit" name="profit" fill="#00A86B" radius={[6,6,0,0]}
+                onClick={(d) => setQView(d.name as typeof qView)} style={{ cursor: 'pointer' }}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+          {/* Q summary row */}
+          <div className="grid grid-cols-4 gap-2 mt-3 pt-3 border-t border-[var(--theme-border)]">
+            {quarterlyData.map(q => (
+              <button key={q.name}
+                onClick={() => setQView(q.name as typeof qView)}
+                className={clsx(
+                  'text-center p-2 rounded-xl transition-all border',
+                  qView === q.name ? 'border-accent bg-accent/10' : 'border-[var(--theme-border)] hover:bg-[var(--theme-hover)]'
+                )}
+              >
+                <p className={clsx('text-xs font-bold', qView === q.name ? 'text-accent' : 'text-primary')}>{q.name}</p>
+                <p className="text-[10px] text-muted">{q.months}</p>
+                <p className="text-[11px] font-semibold text-primary mt-0.5">{fmtK(q.revenue)}</p>
+                <p className="text-[9px] text-muted">{q.count} งาน</p>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {projects.length === 0 ? (
         <div className="glass-card rounded-2xl p-16 text-center">
-          <BarChart3 size={48} className="text-gray-200 mx-auto mb-4" />
+          <MdBarChart size={48} className="text-gray-200 mx-auto mb-4" />
           <p className="text-gray-400 font-medium">ยังไม่มีข้อมูลสำหรับวิเคราะห์</p>
           <p className="text-sm text-gray-300 mt-1">สร้างโปรเจกต์จากหน้า คิดราคา เพื่อเริ่มต้น</p>
         </div>

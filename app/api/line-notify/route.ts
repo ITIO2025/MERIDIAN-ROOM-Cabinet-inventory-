@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth-config'
 
 // ── LINE Messaging API proxy ──────────────────────────────────────────────────
 // Supports:
@@ -6,6 +8,9 @@ import { NextRequest, NextResponse } from 'next/server'
 //   broadcast → POST /v2/bot/message/broadcast  (ส่งให้ทุก follower)
 
 export async function POST(req: NextRequest) {
+  const session = await getServerSession(authOptions)
+  if (!session) return NextResponse.json({ ok: false, message: 'Unauthorized' }, { status: 401 })
+
   try {
     const { token, userId, message } = await req.json()
 

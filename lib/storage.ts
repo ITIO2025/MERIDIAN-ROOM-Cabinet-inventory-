@@ -55,12 +55,22 @@ export interface StoredNotification {
 
 // ─── Storage Keys ─────────────────────────────────────────────────────────────
 
-const KEYS = {
-  PROJECTS:      'meridian_projects',
-  CUSTOMERS:     'meridian_customers',
-  STOCK:         'meridian_stock',
-  NOTIFICATIONS: 'meridian_notifications',
+export const STORAGE_KEYS = {
+  PROJECTS:       'meridian_projects',
+  CUSTOMERS:      'meridian_customers',
+  STOCK:          'meridian_stock',
+  NOTIFICATIONS:  'meridian_notifications',
+  // Company info & branding
+  COMPANY_INFO:   'company_info',
+  LOGO_LIGHT:     'company_logo_light',
+  LOGO_DARK:      'company_logo_dark',
+  LOGO_LEGACY:    'company_logo',
+  // Theme
+  THEME_PREFS:    'meridian_theme_prefs',
 } as const
+
+// Keep internal alias for existing helpers below
+const KEYS = STORAGE_KEYS
 
 // ─── Safe localStorage ────────────────────────────────────────────────────────
 

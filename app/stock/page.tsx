@@ -1,9 +1,9 @@
 'use client'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import {
-  Package, Plus, Search, Minus, Trash2, X, Save,
-  AlertTriangle, TrendingDown, ImageIcon, Upload, Camera
-} from 'lucide-react'
+  MdInventory, MdAdd, MdSearch, MdRemove, MdDelete, MdClose, MdSave,
+  MdWarning, MdTrendingDown, MdImage, MdUpload, MdPhotoCamera
+} from 'react-icons/md'
 import { getStock, saveStockItem, adjustStock, deleteStockItem } from '@/lib/storage'
 import type { StoredStockItem } from '@/lib/storage'
 import { useToast } from '@/context/ToastContext'
@@ -96,11 +96,11 @@ function ImageUploadZone({
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
             <button type="button" onClick={() => inputRef.current?.click()}
               className="px-3 py-1.5 bg-white/90 rounded-lg text-xs font-medium text-gray-700 flex items-center gap-1.5">
-              <Camera size={12} /> เปลี่ยนรูป
+              <MdPhotoCamera size={12} /> เปลี่ยนรูป
             </button>
             <button type="button" onClick={() => onChange('')}
               className="px-3 py-1.5 bg-white/90 rounded-lg text-xs font-medium text-danger flex items-center gap-1.5">
-              <X size={12} /> ลบรูป
+              <MdClose size={12} /> ลบรูป
             </button>
           </div>
         </div>
@@ -121,7 +121,7 @@ function ImageUploadZone({
         >
           <div className={clsx('w-9 h-9 rounded-xl flex items-center justify-center transition-colors',
             dragging ? 'bg-accent/15' : 'bg-gray-100')}>
-            <Upload size={16} className={dragging ? 'text-accent' : 'text-gray-400'} />
+            <MdUpload size={16} className={dragging ? 'text-accent' : 'text-gray-400'} />
           </div>
           <div className="text-center">
             <p className="text-xs font-medium text-gray-600">คลิกหรือลากรูปมาวาง</p>
@@ -216,7 +216,7 @@ export default function StockPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-xl font-bold text-primary flex items-center gap-2">
-            <Package size={22} className="text-accent" /> คลังวัสดุ
+            <MdInventory size={22} className="text-accent" /> คลังวัสดุ
           </h1>
           <p className="text-sm text-gray-400 mt-0.5">
             {items.length} รายการ · มูลค่า {fmtB(totalValue)}
@@ -238,7 +238,7 @@ export default function StockPage() {
           </div>
           <button onClick={openAdd}
             className="flex items-center gap-2 px-4 py-2 gold-gradient text-primary text-sm font-semibold rounded-xl hover:shadow-gold transition-all">
-            <Plus size={16} /> เพิ่มวัสดุ
+            <MdAdd size={16} /> เพิ่มวัสดุ
           </button>
         </div>
       </div>
@@ -246,7 +246,7 @@ export default function StockPage() {
       {/* ── Low Stock Alert ── */}
       {lowCount > 0 && (
         <div className="flex items-center gap-3 p-3.5 bg-warning/8 border border-warning/20 rounded-2xl">
-          <AlertTriangle size={18} className="text-warning flex-shrink-0" />
+          <MdWarning size={18} className="text-warning flex-shrink-0" />
           <p className="text-sm text-gray-700">
             มี <span className="font-bold text-warning">{lowCount}</span> รายการที่ Stock ต่ำกว่าเกณฑ์ ควรสั่งซื้อเพิ่ม
           </p>
@@ -256,7 +256,7 @@ export default function StockPage() {
       {/* ── Search + Category Filter ── */}
       <div className="flex flex-col sm:flex-row gap-2">
         <div className="relative flex-1">
-          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <MdSearch size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input value={search} onChange={e => setSearch(e.target.value)}
             placeholder="ค้นหาชื่อวัสดุ หมวดหมู่ หรือผู้จัดจำหน่าย..."
             className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-accent/30 bg-white" />
@@ -277,11 +277,11 @@ export default function StockPage() {
       {/* ── Empty State ── */}
       {filtered.length === 0 ? (
         <div className="glass-card rounded-2xl p-12 text-center">
-          <Package size={40} className="text-gray-200 mx-auto mb-3" />
+          <MdInventory size={40} className="text-gray-200 mx-auto mb-3" />
           <p className="text-gray-400 font-medium">ยังไม่มีวัสดุในคลัง</p>
           <button onClick={openAdd}
             className="inline-flex items-center gap-2 mt-4 px-4 py-2 gold-gradient text-primary text-sm font-semibold rounded-xl">
-            <Plus size={14} /> เพิ่มวัสดุแรก
+            <MdAdd size={14} /> เพิ่มวัสดุแรก
           </button>
         </div>
       ) : viewMode === 'grid' ? (
@@ -299,7 +299,7 @@ export default function StockPage() {
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <ImageIcon size={28} className="text-gray-300" />
+                    <MdImage size={28} className="text-gray-300" />
                   </div>
                 )}
                 {/* Status badge */}
@@ -332,7 +332,7 @@ export default function StockPage() {
                   </button>
                   <button onClick={() => setDeleteConfirm(item.id)}
                     className="p-1 rounded-lg hover:bg-danger/10 text-gray-400 hover:text-danger transition-colors">
-                    <Trash2 size={12} />
+                    <MdDelete size={12} />
                   </button>
                 </div>
               </div>
@@ -342,7 +342,7 @@ export default function StockPage() {
           {/* Add new card */}
           <button onClick={openAdd}
             className="h-full min-h-[200px] rounded-2xl border-2 border-dashed border-gray-200 hover:border-accent/50 hover:bg-gray-50 flex flex-col items-center justify-center gap-2 transition-all text-gray-400 hover:text-accent">
-            <Plus size={24} />
+            <MdAdd size={24} />
             <p className="text-xs font-medium">เพิ่มวัสดุ</p>
           </button>
         </div>
@@ -377,7 +377,7 @@ export default function StockPage() {
                         <button onClick={() => openEdit(item)}
                           className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center hover:bg-accent/10 hover:text-accent text-gray-300 transition-colors"
                           title="เพิ่มรูป">
-                          <ImageIcon size={14} />
+                          <MdImage size={14} />
                         </button>
                       )}
                     </td>
@@ -407,15 +407,15 @@ export default function StockPage() {
                       <div className="flex items-center justify-center gap-1">
                         <button onClick={() => { setAdjustTarget(item); setAdjustQty('') }}
                           className="p-1.5 rounded-lg hover:bg-accent/10 text-gray-400 hover:text-accent transition-colors" title="ปรับจำนวน">
-                          <TrendingDown size={13} />
+                          <MdTrendingDown size={13} />
                         </button>
                         <button onClick={() => openEdit(item)}
                           className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-primary transition-colors" title="แก้ไข">
-                          <Plus size={13} />
+                          <MdAdd size={13} />
                         </button>
                         <button onClick={() => setDeleteConfirm(item.id)}
                           className="p-1.5 rounded-lg hover:bg-danger/5 text-gray-400 hover:text-danger transition-colors">
-                          <Trash2 size={13} />
+                          <MdDelete size={13} />
                         </button>
                       </div>
                     </td>
@@ -440,7 +440,7 @@ export default function StockPage() {
                 <h3 className="font-bold text-primary text-sm">{adjustTarget.name}</h3>
               </div>
               <button onClick={() => setAdjustTarget(null)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400">
-                <X size={16} />
+                <MdClose size={16} />
               </button>
             </div>
             <p className="text-sm text-gray-500 mb-3">
@@ -452,11 +452,11 @@ export default function StockPage() {
             <div className="grid grid-cols-2 gap-2">
               <button onClick={() => handleAdjust(1)}
                 className="py-2.5 bg-success/10 text-success rounded-xl text-sm font-semibold hover:bg-success/20 transition-colors flex items-center justify-center gap-2">
-                <Plus size={14} /> รับเข้า
+                <MdAdd size={14} /> รับเข้า
               </button>
               <button onClick={() => handleAdjust(-1)}
                 className="py-2.5 bg-danger/10 text-danger rounded-xl text-sm font-semibold hover:bg-danger/20 transition-colors flex items-center justify-center gap-2">
-                <Minus size={14} /> เบิกออก
+                <MdRemove size={14} /> เบิกออก
               </button>
             </div>
           </div>
@@ -470,7 +470,7 @@ export default function StockPage() {
             <div className="flex items-center justify-between mb-5">
               <h3 className="font-bold text-primary">{editId ? 'แก้ไขวัสดุ' : 'เพิ่มวัสดุใหม่'}</h3>
               <button onClick={() => setShowModal(false)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400">
-                <X size={16} />
+                <MdClose size={16} />
               </button>
             </div>
 
@@ -550,7 +550,7 @@ export default function StockPage() {
               </button>
               <button onClick={handleSave}
                 className="flex-1 py-2.5 gold-gradient text-primary rounded-xl text-sm font-semibold hover:shadow-gold transition-all flex items-center justify-center gap-2">
-                <Save size={14} /> {editId ? 'บันทึก' : 'เพิ่มวัสดุ'}
+                <MdSave size={14} /> {editId ? 'บันทึก' : 'เพิ่มวัสดุ'}
               </button>
             </div>
           </div>
@@ -562,7 +562,7 @@ export default function StockPage() {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-scale-in">
             <div className="w-12 h-12 bg-danger/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Trash2 size={22} className="text-danger" />
+              <MdDelete size={22} className="text-danger" />
             </div>
             <h3 className="text-base font-bold text-primary text-center">ยืนยันการลบ?</h3>
             <p className="text-sm text-gray-500 text-center mt-1">

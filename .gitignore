@@ -35,3 +35,8 @@ desktop.ini
 # ─── TypeScript ────────────────────────────────────────────────────────────────
 *.tsbuildinfo
 next-env.d.ts
+
+.vercel
+
+# ─── Local preview / temp files ────────────────────────────────────────────────
+public/gas-preview/

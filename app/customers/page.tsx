@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { Users, Plus, Search, Phone, MapPin, Trash2, Edit3, X, Save } from 'lucide-react'
+import { MdPeople, MdAdd, MdSearch, MdPhone, MdLocationOn, MdDelete, MdEdit, MdClose, MdSave } from 'react-icons/md'
 import { getCustomers, saveCustomer, deleteCustomer } from '@/lib/storage'
 import type { StoredCustomer } from '@/lib/storage'
 import { useToast } from '@/context/ToastContext'
@@ -73,19 +73,19 @@ export default function CustomersPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-xl font-bold text-primary flex items-center gap-2">
-            <Users size={22} className="text-accent" /> ลูกค้า
+            <MdPeople size={22} className="text-accent" /> ลูกค้า
           </h1>
           <p className="text-sm text-gray-400 mt-0.5">{customers.length} รายการในระบบ</p>
         </div>
         <button onClick={openAdd}
           className="flex items-center gap-2 px-4 py-2 gold-gradient text-primary text-sm font-semibold rounded-xl hover:shadow-gold transition-all">
-          <Plus size={16} /> เพิ่มลูกค้าใหม่
+          <MdAdd size={16} /> เพิ่มลูกค้าใหม่
         </button>
       </div>
 
       {/* Search */}
       <div className="relative max-w-sm">
-        <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        <MdSearch size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
         <input
           value={search}
           onChange={e => setSearch(e.target.value)}
@@ -97,10 +97,10 @@ export default function CustomersPage() {
       {/* Cards Grid */}
       {filtered.length === 0 ? (
         <div className="glass-card rounded-2xl p-12 text-center">
-          <Users size={40} className="text-gray-200 mx-auto mb-3" />
+          <MdPeople size={40} className="text-gray-200 mx-auto mb-3" />
           <p className="text-gray-400 font-medium">ยังไม่มีลูกค้า</p>
           <button onClick={openAdd} className="inline-flex items-center gap-2 mt-4 px-4 py-2 gold-gradient text-primary text-sm font-semibold rounded-xl">
-            <Plus size={14} /> เพิ่มลูกค้าแรก
+            <MdAdd size={14} /> เพิ่มลูกค้าแรก
           </button>
         </div>
       ) : (
@@ -114,11 +114,11 @@ export default function CustomersPage() {
                 <div className="flex gap-1">
                   <button onClick={() => openEdit(c)}
                     className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-primary transition-colors">
-                    <Edit3 size={13} />
+                    <MdEdit size={13} />
                   </button>
                   <button onClick={() => setDeleteConfirm(c.id)}
                     className="p-1.5 rounded-lg hover:bg-danger/5 text-gray-400 hover:text-danger transition-colors">
-                    <Trash2 size={13} />
+                    <MdDelete size={13} />
                   </button>
                 </div>
               </div>
@@ -126,12 +126,12 @@ export default function CustomersPage() {
               <p className="font-semibold text-primary text-sm">{c.name}</p>
               {c.phone && (
                 <p className="flex items-center gap-1.5 text-xs text-gray-500 mt-1.5">
-                  <Phone size={11} className="text-gray-300" /> {c.phone}
+                  <MdPhone size={11} className="text-gray-300" /> {c.phone}
                 </p>
               )}
               {c.address && (
                 <p className="flex items-center gap-1.5 text-xs text-gray-500 mt-1">
-                  <MapPin size={11} className="text-gray-300" /> {c.address}
+                  <MdLocationOn size={11} className="text-gray-300" /> {c.address}
                 </p>
               )}
               {c.note && (
@@ -160,7 +160,7 @@ export default function CustomersPage() {
             <div className="flex items-center justify-between mb-5">
               <h3 className="font-bold text-primary">{editId ? 'แก้ไขลูกค้า' : 'เพิ่มลูกค้าใหม่'}</h3>
               <button onClick={() => setShowModal(false)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400">
-                <X size={16} />
+                <MdClose size={16} />
               </button>
             </div>
 
@@ -200,7 +200,7 @@ export default function CustomersPage() {
               </button>
               <button onClick={handleSave} disabled={saving}
                 className="flex-1 py-2.5 gold-gradient text-primary rounded-xl text-sm font-semibold hover:shadow-gold transition-all flex items-center justify-center gap-2 disabled:opacity-60">
-                <Save size={14} /> {editId ? 'บันทึก' : 'เพิ่มลูกค้า'}
+                <MdSave size={14} /> {editId ? 'บันทึก' : 'เพิ่มลูกค้า'}
               </button>
             </div>
           </div>
@@ -212,7 +212,7 @@ export default function CustomersPage() {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-scale-in">
             <div className="w-12 h-12 bg-danger/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Trash2 size={22} className="text-danger" />
+              <MdDelete size={22} className="text-danger" />
             </div>
             <h3 className="text-base font-bold text-primary text-center">ยืนยันการลบ?</h3>
             <p className="text-sm text-gray-500 text-center mt-1">

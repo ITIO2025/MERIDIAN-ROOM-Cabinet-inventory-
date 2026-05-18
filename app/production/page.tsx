@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { Warehouse, Clock, CheckCircle, AlertTriangle, Package } from 'lucide-react'
+import { MdWarehouse, MdAccessTime, MdCheckCircle, MdWarning, MdInventory } from 'react-icons/md'
 import { getProjects } from '@/lib/storage'
 import type { StoredProject } from '@/lib/storage'
 import { STATUS_LABELS } from '@/lib/types'
@@ -16,9 +16,9 @@ const STATUS_COLORS: Record<string, string> = {
 }
 
 const STATUS_ICONS: Record<string, React.ElementType> = {
-  CONFIRMED:    CheckCircle,
-  PRODUCTION:   Clock,
-  INSTALLATION: Warehouse,
+  CONFIRMED:    MdCheckCircle,
+  PRODUCTION:   MdAccessTime,
+  INSTALLATION: MdWarehouse,
 }
 
 export default function ProductionPage() {
@@ -40,7 +40,7 @@ export default function ProductionPage() {
       {/* Header */}
       <div>
         <h1 className="text-xl font-bold text-primary flex items-center gap-2">
-          <Warehouse size={22} className="text-accent" /> การผลิต
+          <MdWarehouse size={22} className="text-accent" /> การผลิต
         </h1>
         <p className="text-sm text-gray-400 mt-0.5">{inProduction.length} งานในกระบวนการผลิตและติดตั้ง</p>
       </div>
@@ -63,7 +63,7 @@ export default function ProductionPage() {
 
       {inProduction.length === 0 ? (
         <div className="glass-card rounded-2xl p-12 text-center">
-          <Warehouse size={40} className="text-gray-200 mx-auto mb-3" />
+          <MdWarehouse size={40} className="text-gray-200 mx-auto mb-3" />
           <p className="text-gray-400 font-medium">ไม่มีงานในกระบวนการผลิต</p>
           <p className="text-sm text-gray-300 mt-1">เปลี่ยนสถานะโปรเจกต์เป็น &ldquo;ยืนยันแล้ว&rdquo; เพื่อเริ่มกระบวนการผลิต</p>
           <Link href="/projects" className="inline-flex items-center gap-2 mt-4 px-4 py-2 border border-accent text-accent text-sm font-medium rounded-xl">
@@ -114,7 +114,7 @@ export default function ProductionPage() {
       {/* Materials Needed */}
       <div className="glass-card rounded-2xl p-5">
         <div className="flex items-center gap-2 mb-4">
-          <Package size={16} className="text-accent" />
+          <MdInventory size={16} className="text-accent" />
           <p className="font-semibold text-primary text-sm">วัสดุที่ต้องใช้ (ประมาณการ)</p>
         </div>
         {inProduction.length === 0 ? (
@@ -122,7 +122,7 @@ export default function ProductionPage() {
         ) : (
           <div className="space-y-2">
             <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-              <AlertTriangle size={14} className="text-warning" />
+              <MdWarning size={14} className="text-warning" />
               <p className="text-sm text-gray-600">
                 มีงานรอผลิต <span className="font-bold text-primary">{inProduction.length}</span> โปรเจกต์
                 คิดเป็นมูลค่ารวม <span className="font-bold text-accent">{fmt(inProduction.reduce((s, p) => s + p.sellingPrice, 0))}</span>

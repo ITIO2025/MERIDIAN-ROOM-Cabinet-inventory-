@@ -1,10 +1,10 @@
 'use client'
 import { useState, useRef } from 'react'
 import {
-  Palette, Sun, Moon, Wand2, Type, Layers, RotateCcw,
-  Download, Upload, Check, Sparkles, Monitor, Zap,
-  ChevronRight, Info,
-} from 'lucide-react'
+  MdPalette, MdAutoAwesome, MdAutoFixHigh, MdTextFields, MdLayers, MdRestartAlt,
+  MdDownload, MdUpload, MdCheck, MdBolt, MdMonitor,
+  MdChevronRight, MdInfo,
+} from 'react-icons/md'
 import Link from 'next/link'
 import { useTheme } from '@/context/ThemeContext'
 import {
@@ -87,7 +87,7 @@ function ThemeCard({ theme, active, onClick }: {
       {active && (
         <div className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full flex items-center justify-center shadow-sm"
           style={{ background: 'var(--color-accent)' }}>
-          <Check size={10} color="white" strokeWidth={3} />
+          <MdCheck size={10} color="white" />
         </div>
       )}
 
@@ -170,11 +170,11 @@ export default function ThemeStudioPage() {
               style={{ color: 'var(--theme-text-muted)' }}>
               ตั้งค่า
             </Link>
-            <ChevronRight size={13} style={{ color: 'var(--theme-text-muted)' }} />
+            <MdChevronRight size={13} style={{ color: 'var(--theme-text-muted)' }} />
             <span className="text-sm font-semibold" style={{ color: 'var(--theme-text)' }}>Theme Studio</span>
           </div>
           <h1 className="text-xl font-bold flex items-center gap-2" style={{ color: 'var(--theme-text)' }}>
-            <Wand2 size={22} style={{ color: 'var(--color-accent)' }} />
+            <MdAutoFixHigh size={22} style={{ color: 'var(--color-accent)' }} />
             Theme Studio
           </h1>
           <p className="text-sm mt-0.5" style={{ color: 'var(--theme-text-muted)' }}>
@@ -187,16 +187,16 @@ export default function ThemeStudioPage() {
           <button onClick={handleExport}
             className="flex items-center gap-1.5 px-3 py-2 text-xs rounded-btn border transition-all hover:opacity-80"
             style={{ borderColor: 'var(--theme-border)', color: 'var(--theme-text-muted)' }}>
-            <Download size={13} /> Export
+            <MdDownload size={13} /> Export
           </button>
           <button onClick={() => fileRef.current?.click()}
             className="flex items-center gap-1.5 px-3 py-2 text-xs rounded-btn border transition-all hover:opacity-80"
             style={{ borderColor: 'var(--theme-border)', color: 'var(--theme-text-muted)' }}>
-            <Upload size={13} /> Import
+            <MdUpload size={13} /> Import
           </button>
           <button onClick={handleReset}
             className="flex items-center gap-1.5 px-3 py-2 text-xs rounded-btn border border-danger/30 text-danger transition-all hover:bg-danger/5">
-            <RotateCcw size={13} /> Reset
+            <MdRestartAlt size={13} /> Reset
           </button>
           <input ref={fileRef} type="file" accept=".json" className="hidden" onChange={handleImport} />
         </div>
@@ -228,7 +228,7 @@ export default function ThemeStudioPage() {
       </div>
 
       {/* ── Theme Modes ────────────────────────────────────────── */}
-      <Section title="Theme Mode" icon={Palette}>
+      <Section title="Theme Mode" icon={MdPalette}>
         <div className="grid grid-cols-3 gap-3">
           {THEMES.map(theme => (
             <ThemeCard
@@ -242,7 +242,7 @@ export default function ThemeStudioPage() {
       </Section>
 
       {/* ── Accent Color ───────────────────────────────────────── */}
-      <Section title="Accent Color" icon={Sparkles}>
+      <Section title="Accent Color" icon={MdAutoAwesome}>
         <div className="space-y-3">
           {/* Presets */}
           <div className="flex flex-wrap gap-2">
@@ -260,7 +260,7 @@ export default function ThemeStudioPage() {
                 }}
               >
                 {prefs.accentHex === p.hex && (
-                  <Check size={12} color="white" strokeWidth={3}
+                  <MdCheck size={12} color="white"
                     className="absolute inset-0 m-auto drop-shadow" />
                 )}
                 {/* Tooltip */}
@@ -325,7 +325,7 @@ export default function ThemeStudioPage() {
       </Section>
 
       {/* ── Font ───────────────────────────────────────────────── */}
-      <Section title="Font Family" icon={Type}>
+      <Section title="Font Family" icon={MdTextFields}>
         <div className="grid grid-cols-3 gap-3">
           {FONT_OPTIONS.map(font => (
             <button
@@ -351,7 +351,7 @@ export default function ThemeStudioPage() {
               {prefs.font === font.id && (
                 <div className="mt-1.5 flex items-center gap-1 text-[10px] font-semibold"
                   style={{ color: 'var(--color-accent)' }}>
-                  <Check size={10} strokeWidth={3} /> ใช้งานอยู่
+                  <MdCheck size={10} /> ใช้งานอยู่
                 </div>
               )}
             </button>
@@ -360,7 +360,7 @@ export default function ThemeStudioPage() {
       </Section>
 
       {/* ── Radius ─────────────────────────────────────────────── */}
-      <Section title="Border Radius" icon={Layers}>
+      <Section title="Border Radius" icon={MdLayers}>
         <div className="flex gap-2 flex-wrap">
           {RADIUS_OPTIONS.map(opt => (
             <button
@@ -408,7 +408,7 @@ export default function ThemeStudioPage() {
       </Section>
 
       {/* ── Density ────────────────────────────────────────────── */}
-      <Section title="Layout Density" icon={Monitor}>
+      <Section title="Layout Density" icon={MdMonitor}>
         <div className="grid grid-cols-3 gap-3">
           {DENSITY_OPTIONS.map(opt => (
             <button
@@ -433,7 +433,7 @@ export default function ThemeStudioPage() {
       </Section>
 
       {/* ── Live Component Preview ──────────────────────────────── */}
-      <Section title="ตัวอย่างหน้าตา (Live Preview)" icon={Zap}>
+      <Section title="ตัวอย่างหน้าตา (Live Preview)" icon={MdBolt}>
         <div className="rounded-card overflow-hidden border"
           style={{ borderColor: 'var(--theme-border)' }}>
           {/* Mock header */}
@@ -530,7 +530,7 @@ export default function ThemeStudioPage() {
         {/* Info note */}
         <div className="flex items-start gap-2 p-3 rounded-card"
           style={{ background: 'rgba(var(--tw-info),0.06)', border: '1px solid rgba(var(--tw-info),0.15)' }}>
-          <Info size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'rgb(var(--tw-info))' }} />
+          <MdInfo size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'rgb(var(--tw-info))' }} />
           <p className="text-xs" style={{ color: 'var(--theme-text-muted)' }}>
             การเปลี่ยน Theme ใช้งานทันทีทั่วทั้งแอปและบันทึกอัตโนมัติ
             ผู้ใช้แต่ละคนสามารถมี Theme ของตัวเองได้

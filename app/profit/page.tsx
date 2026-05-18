@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { TrendingUp, DollarSign, AlertTriangle, CheckCircle, ChevronDown, ChevronUp } from 'lucide-react'
+import { MdTrendingUp, MdAttachMoney, MdWarning, MdCheckCircle, MdExpandMore, MdExpandLess } from 'react-icons/md'
 import { getProjects } from '@/lib/storage'
 import type { StoredProject } from '@/lib/storage'
 import { PROJECT_TYPE_LABELS, STATUS_LABELS } from '@/lib/types'
@@ -34,14 +34,14 @@ export default function ProfitPage() {
   const fmt = (v: number) => v.toLocaleString('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 })
 
   const SortIcon = ({ k }: { k: typeof sortKey }) =>
-    sortKey === k ? (sortDir === 'desc' ? <ChevronDown size={12} /> : <ChevronUp size={12} />) : null
+    sortKey === k ? (sortDir === 'desc' ? <MdExpandMore size={12} /> : <MdExpandLess size={12} />) : null
 
   return (
     <div className="p-4 md:p-6 space-y-5">
       {/* Header */}
       <div>
         <h1 className="text-xl font-bold text-primary flex items-center gap-2">
-          <TrendingUp size={22} className="text-accent" /> กำไร & Margin
+          <MdTrendingUp size={22} className="text-accent" /> กำไร & Margin
         </h1>
         <p className="text-sm text-gray-400 mt-0.5">วิเคราะห์ความสามารถในการทำกำไรแต่ละโปรเจกต์</p>
       </div>
@@ -49,10 +49,10 @@ export default function ProfitPage() {
       {/* Summary Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'รายได้รวม',    value: fmt(revenue),     icon: DollarSign, color: 'bg-accent/10 text-accent' },
-          { label: 'ต้นทุนรวม',    value: fmt(totalCost),   icon: TrendingUp, color: 'bg-gray-100 text-gray-600' },
-          { label: 'กำไรสุทธิ',    value: fmt(profit),      icon: CheckCircle, color: profit >= 0 ? 'bg-success/10 text-success' : 'bg-danger/10 text-danger' },
-          { label: 'Margin เฉลี่ย', value: `${avgMargin.toFixed(1)}%`, icon: AlertTriangle,
+          { label: 'รายได้รวม',    value: fmt(revenue),     icon: MdAttachMoney, color: 'bg-accent/10 text-accent' },
+          { label: 'ต้นทุนรวม',    value: fmt(totalCost),   icon: MdTrendingUp, color: 'bg-gray-100 text-gray-600' },
+          { label: 'กำไรสุทธิ',    value: fmt(profit),      icon: MdCheckCircle, color: profit >= 0 ? 'bg-success/10 text-success' : 'bg-danger/10 text-danger' },
+          { label: 'Margin เฉลี่ย', value: `${avgMargin.toFixed(1)}%`, icon: MdWarning,
             color: avgMargin >= 25 ? 'bg-success/10 text-success' : avgMargin >= 15 ? 'bg-warning/10 text-warning' : 'bg-danger/10 text-danger' },
         ].map(c => (
           <div key={c.label} className="glass-card rounded-2xl p-4">
@@ -101,7 +101,7 @@ export default function ProfitPage() {
       {/* Table */}
       {sorted.length === 0 ? (
         <div className="glass-card rounded-2xl p-12 text-center">
-          <TrendingUp size={40} className="text-gray-200 mx-auto mb-3" />
+          <MdTrendingUp size={40} className="text-gray-200 mx-auto mb-3" />
           <p className="text-gray-400 font-medium">ยังไม่มีโปรเจกต์</p>
         </div>
       ) : (

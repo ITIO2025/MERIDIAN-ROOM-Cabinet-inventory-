@@ -1,11 +1,11 @@
 'use client'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import {
-  Settings, Link2, CheckCircle, XCircle, Loader2, Save,
-  Database, Bell, Shield, Palette, Upload, X, Camera,
-  MessageCircle, Copy, ExternalLink, Zap, RefreshCw,
-  Package, ChevronDown, ChevronUp, DollarSign, RotateCcw, Wand2
-} from 'lucide-react'
+  MdSettings, MdLink, MdCheckCircle, MdCancel, MdRefresh, MdSave,
+  MdStorage, MdNotifications, MdSecurity, MdPalette, MdUpload, MdClose, MdPhotoCamera,
+  MdChat, MdContentCopy, MdOpenInNew, MdBolt, MdSync,
+  MdInventory, MdExpandMore, MdExpandLess, MdAttachMoney, MdRestartAlt, MdAutoFixHigh
+} from 'react-icons/md'
 import { useToast } from '@/context/ToastContext'
 import { useSession } from 'next-auth/react'
 import { ROLE_LABELS } from '@/lib/auth-users'
@@ -15,6 +15,54 @@ import {
   SURFACE_PRICES, EDGE_PRICES, LABOR_RATES, INSTALLATION_RATES,
   savePriceOverrides, resetPriceOverrides,
 } from '@/lib/data'
+
+// ── NumberStepper — custom ±  stepper (replaces native browser spinner) ────────
+interface NumberStepperProps {
+  value: number
+  onChange: (v: number) => void
+  min?: number
+  max?: number
+  step?: number
+  unit?: string
+}
+function NumberStepper({ value, onChange, min = 0, max = 99999, step = 1, unit }: NumberStepperProps) {
+  const dec = () => onChange(Math.max(min, value - step))
+  const inc = () => onChange(Math.min(max, value + step))
+  const btnBase: React.CSSProperties = {
+    width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center',
+    borderRadius: 5, border: '1px solid rgba(212,175,96,0.35)', background: 'rgba(212,175,96,0.08)',
+    color: '#D4AF60', fontSize: 15, fontWeight: 700, cursor: 'pointer', flexShrink: 0,
+    transition: 'background 0.15s, border-color 0.15s', userSelect: 'none' as const,
+    lineHeight: 1,
+  }
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+      <button type="button" onClick={dec} style={btnBase}
+        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(212,175,96,0.2)' }}
+        onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(212,175,96,0.08)' }}>
+        −
+      </button>
+      <input
+        type="number" value={value} min={min} max={max} step={step}
+        onChange={e => { const n = Number(e.target.value); if (!isNaN(n)) onChange(Math.min(max, Math.max(min, n))) }}
+        style={{
+          width: 64, textAlign: 'right', fontSize: 12, fontWeight: 600,
+          background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)',
+          borderRadius: 5, padding: '3px 6px', color: 'inherit',
+          // hide native spinners
+          MozAppearance: 'textfield' as never,
+        }}
+        className="[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none focus:outline-none focus:border-[#D4AF60]/50"
+      />
+      <button type="button" onClick={inc} style={btnBase}
+        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(212,175,96,0.2)' }}
+        onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(212,175,96,0.08)' }}>
+        +
+      </button>
+      {unit && <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', flexShrink: 0 }}>{unit}</span>}
+    </div>
+  )
+}
 
 // ── LINE Notify prefs ─────────────────────────────────────────────────────────
 interface LinePrefs { newProject: boolean; statusChange: boolean; lowStock: boolean }
@@ -44,8 +92,16 @@ function resizeImage(file: File, maxPx = 400, quality = 0.9, fmt = 'image/png'):
   })
 }
 
-// ── Logo Upload Zone ──────────────────────────────────────────────────────────
-function LogoUploadZone({ value, onChange }: { value: string; onChange: (url: string) => void }) {
+// ── Single Logo Slot ──────────────────────────────────────────────────────────
+interface LogoSlotProps {
+  label: string
+  hint: string
+  previewBg: string          // CSS background for the preview tile
+  previewLabel: string
+  value: string
+  onChange: (url: string) => void
+}
+function LogoSlot({ label, hint, previewBg, previewLabel, value, onChange }: LogoSlotProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [dragging, setDragging] = useState(false)
   const { error } = useToast()
@@ -64,42 +120,97 @@ function LogoUploadZone({ value, onChange }: { value: string; onChange: (url: st
   }, [process])
 
   return (
-    <div>
-      <label className="block text-xs font-medium text-gray-600 mb-2">โลโก้บริษัท</label>
-      {value ? (
-        <div className="flex items-start gap-4">
-          <div className="relative group w-32 h-20 bg-gray-100 rounded-xl overflow-hidden border border-gray-200 flex items-center justify-center flex-shrink-0">
-            <img src={value} alt="logo" className="max-w-full max-h-full object-contain p-2" />
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center gap-1.5 opacity-0 group-hover:opacity-100">
-              <button type="button" onClick={() => inputRef.current?.click()} className="p-1.5 bg-white/90 rounded-lg text-xs text-gray-700"><Camera size={13} /></button>
-              <button type="button" onClick={() => onChange('')} className="p-1.5 bg-white/90 rounded-lg text-xs text-danger"><X size={13} /></button>
+    <div className="flex-1 min-w-0">
+      <p className="text-xs font-semibold text-gray-700 mb-0.5">{label}</p>
+      <p className="text-[11px] text-gray-400 mb-2">{hint}</p>
+
+      {/* Preview tile */}
+      <div
+        className="relative group w-full h-24 rounded-xl overflow-hidden border flex items-center justify-center mb-2"
+        style={{ background: previewBg, borderColor: value ? 'transparent' : '#e5e7eb' }}
+      >
+        {value ? (
+          <>
+            <img src={value} alt="logo preview" className="max-w-full max-h-full object-contain p-3" />
+            {/* Hover controls */}
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
+              <button type="button" onClick={() => inputRef.current?.click()}
+                className="p-1.5 bg-white/90 rounded-lg text-gray-700 hover:bg-white transition-colors">
+                <MdPhotoCamera size={13} />
+              </button>
+              <button type="button" onClick={() => onChange('')}
+                className="p-1.5 bg-white/90 rounded-lg text-danger hover:bg-white transition-colors">
+                <MdClose size={13} />
+              </button>
             </div>
-          </div>
-          <div className="flex-1">
-            <p className="text-sm font-medium text-success flex items-center gap-1.5"><CheckCircle size={14} /> อัปโหลดโลโก้แล้ว</p>
-            <p className="text-xs text-gray-400 mt-1 leading-relaxed">แสดงใน Sidebar · ใบเสนอราคา · เอกสารทั้งหมด</p>
-            <button type="button" onClick={() => inputRef.current?.click()} className="mt-2 text-xs text-accent hover:underline flex items-center gap-1"><Camera size={11} /> เปลี่ยนโลโก้</button>
-          </div>
-        </div>
-      ) : (
-        <button type="button" onClick={() => inputRef.current?.click()}
-          onDragOver={e => { e.preventDefault(); setDragging(true) }}
-          onDragLeave={() => setDragging(false)} onDrop={onDrop}
-          className={`w-full h-24 rounded-xl border-2 border-dashed transition-all flex flex-col items-center justify-center gap-2 cursor-pointer ${dragging ? 'border-accent bg-accent/5' : 'border-gray-200 hover:border-accent/50 hover:bg-gray-50'}`}>
-          <Upload size={18} className={dragging ? 'text-accent' : 'text-gray-400'} />
-          <p className="text-xs text-gray-500">คลิกหรือลากโลโก้มาวาง · PNG แนะนำ · สูงสุด 10MB</p>
-        </button>
-      )}
-      {value && (
-        <div className="mt-2 rounded-xl bg-primary px-3 py-2 flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg overflow-hidden bg-white/10 flex items-center justify-center flex-shrink-0">
-            <img src={value} alt="preview" className="max-w-full max-h-full object-contain" />
-          </div>
-          <p className="text-xs text-white/60">ตัวอย่างใน Sidebar (พื้นดำ)</p>
-        </div>
-      )}
+            {/* Mode badge */}
+            <span className="absolute bottom-1.5 right-2 text-[9px] font-medium px-1.5 py-0.5 rounded-full"
+              style={{ background: 'rgba(0,0,0,0.45)', color: 'rgba(255,255,255,0.80)', backdropFilter: 'blur(4px)' }}>
+              {previewLabel}
+            </span>
+          </>
+        ) : (
+          <button type="button"
+            onClick={() => inputRef.current?.click()}
+            onDragOver={e => { e.preventDefault(); setDragging(true) }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={onDrop}
+            className={`absolute inset-0 flex flex-col items-center justify-center gap-1.5 transition-all
+              ${dragging ? 'bg-accent/10' : 'hover:bg-black/5'}`}>
+            <MdUpload size={16} className={dragging ? 'text-accent' : 'text-gray-300'} />
+            <span className="text-[10px] text-gray-400">คลิกหรือลากไฟล์</span>
+          </button>
+        )}
+      </div>
+
+      {value
+        ? <p className="text-[11px] text-success flex items-center gap-1"><MdCheckCircle size={11} /> อัปโหลดแล้ว
+            <button type="button" onClick={() => inputRef.current?.click()}
+              className="ml-1 text-accent hover:underline">เปลี่ยน</button>
+          </p>
+        : <p className="text-[11px] text-gray-400">PNG / JPG · สูงสุด 10MB</p>
+      }
+
       <input ref={inputRef} type="file" accept="image/*" className="hidden"
         onChange={e => { const f = e.target.files?.[0]; if (f) process(f) }} />
+    </div>
+  )
+}
+
+// ── Dual Logo Upload ──────────────────────────────────────────────────────────
+interface DualLogoProps {
+  light: string; onLight: (v: string) => void
+  dark:  string; onDark:  (v: string) => void
+}
+function DualLogoUpload({ light, onLight, dark, onDark }: DualLogoProps) {
+  return (
+    <div>
+      <label className="block text-xs font-semibold text-gray-700 mb-3 flex items-center gap-1.5">
+        <span>โลโก้บริษัท</span>
+        <span className="text-[10px] font-normal text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">อัปโหลดแยกตาม Light / Dark Mode</span>
+      </label>
+      <div className="flex gap-3">
+        <LogoSlot
+          label="☀️ Light Mode"
+          hint="โลโก้สีเข้ม ใช้กับพื้นขาว"
+          previewBg="#F8F8F6"
+          previewLabel="Light"
+          value={light}
+          onChange={onLight}
+        />
+        <div className="w-px bg-gray-100 self-stretch" />
+        <LogoSlot
+          label="🌙 Dark / Night Mode"
+          hint="โลโก้สีขาว ใช้กับพื้นดำ"
+          previewBg="#111111"
+          previewLabel="Dark"
+          value={dark}
+          onChange={onDark}
+        />
+      </div>
+      <p className="mt-2 text-[11px] text-gray-400 leading-relaxed">
+        ระบบจะเลือกโลโก้ที่ถูกต้องโดยอัตโนมัติตาม Theme · ใบเสนอราคาใช้โลโก้ Light Mode เสมอ
+      </p>
     </div>
   )
 }
@@ -165,7 +276,8 @@ export default function SettingsPage() {
 
   // General
   const [company, setCompany] = useState({ name: 'MERIDIAN ROOM', taxId: '', phone: '', address: '' })
-  const [logoUrl, setLogoUrl] = useState('')
+  const [logoLight, setLogoLight] = useState('')   // light mode logo (dark-colored logo on white bg)
+  const [logoDark,  setLogoDark]  = useState('')   // dark/night mode logo (white logo on dark bg)
 
   // Google Sheets
   const [sheets, setSheets]     = useState<SheetsCfg>({ id: '', url: '', key: 'meridian-api-key-2026' })
@@ -197,7 +309,10 @@ export default function SettingsPage() {
     if (typeof window === 'undefined') return
     const co = localStorage.getItem('company_info')
     if (co) setCompany(JSON.parse(co))
-    setLogoUrl(localStorage.getItem('company_logo') ?? '')
+    // Load dual logos — fall back to legacy key for backward compat
+    const legacy = localStorage.getItem('company_logo') ?? ''
+    setLogoLight(localStorage.getItem('company_logo_light') || legacy)
+    setLogoDark(localStorage.getItem('company_logo_dark')   || legacy)
     setSheets({
       id:  localStorage.getItem('sheets_id')  ?? '',
       url: localStorage.getItem('sheets_url') ?? '',
@@ -225,7 +340,14 @@ export default function SettingsPage() {
 
   const saveCompany = () => {
     localStorage.setItem('company_info', JSON.stringify(company))
-    if (logoUrl) localStorage.setItem('company_logo', logoUrl)
+    // Save dual logos
+    if (logoLight) localStorage.setItem('company_logo_light', logoLight)
+    else localStorage.removeItem('company_logo_light')
+    if (logoDark)  localStorage.setItem('company_logo_dark',  logoDark)
+    else localStorage.removeItem('company_logo_dark')
+    // Legacy key — keep light logo as default for older components
+    if (logoLight) localStorage.setItem('company_logo', logoLight)
+    else if (logoDark) localStorage.setItem('company_logo', logoDark)
     else localStorage.removeItem('company_logo')
     window.dispatchEvent(new Event('company-logo-updated'))
     success('บันทึกข้อมูลบริษัทแล้ว')
@@ -336,8 +458,8 @@ export default function SettingsPage() {
 
   // ── Nav icons ─────────────────────────────────────────────────────────────
   const ICONS: Record<Section, React.ElementType> = {
-    'ทั่วไป': Palette, 'ราคาวัสดุ': DollarSign, 'Google Sheets': Database,
-    'LINE OA': MessageCircle, 'การแจ้งเตือน': Bell, 'บัญชีผู้ใช้': Shield,
+    'ทั่วไป': MdPalette, 'ราคาวัสดุ': MdAttachMoney, 'Google Sheets': MdStorage,
+    'LINE OA': MdChat, 'การแจ้งเตือน': MdNotifications, 'บัญชีผู้ใช้': MdSecurity,
   }
 
   return (
@@ -346,14 +468,14 @@ export default function SettingsPage() {
         <div className="flex items-start justify-between gap-3">
           <div>
             <h1 className="text-xl font-bold text-primary flex items-center gap-2">
-              <Settings size={22} className="text-accent" /> ตั้งค่าระบบ
+              <MdSettings size={22} className="text-accent" /> ตั้งค่าระบบ
             </h1>
             <p className="text-sm text-gray-400 mt-0.5">จัดการการเชื่อมต่อ LINE OA, Google Sheets และข้อมูลบริษัท</p>
           </div>
           {/* Theme Studio shortcut */}
           <a href="/settings/theme"
             className="flex-shrink-0 flex items-center gap-2 px-3 py-2 rounded-xl border border-accent/30 text-accent text-xs font-semibold hover:bg-accent/5 transition-colors">
-            <Wand2 size={14} />
+            <MdAutoFixHigh size={14} />
             <span className="hidden sm:inline">Theme Studio</span>
           </a>
         </div>
@@ -389,7 +511,10 @@ export default function SettingsPage() {
           {section === 'ทั่วไป' && (
             <div className="space-y-5">
               <h2 className="font-bold text-primary text-base">ข้อมูลบริษัทและโลโก้</h2>
-              <LogoUploadZone value={logoUrl} onChange={setLogoUrl} />
+              <DualLogoUpload
+                light={logoLight} onLight={setLogoLight}
+                dark={logoDark}   onDark={setLogoDark}
+              />
               <div className="border-t border-gray-100 pt-4 space-y-3">
                 {[
                   { key: 'name',    label: 'ชื่อบริษัท',   ph: 'MERIDIAN ROOM' },
@@ -408,7 +533,7 @@ export default function SettingsPage() {
               </div>
               <button onClick={saveCompany}
                 className="flex items-center gap-2 px-5 py-2.5 gold-gradient text-primary text-sm font-semibold rounded-xl hover:shadow-gold transition-all">
-                <Save size={14} /> บันทึกข้อมูลบริษัท
+                <MdSave size={14} /> บันทึกข้อมูลบริษัท
               </button>
             </div>
           )}
@@ -423,7 +548,7 @@ export default function SettingsPage() {
                 </div>
                 <button onClick={resetPrices}
                   className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-danger transition-colors px-2.5 py-1.5 border border-gray-200 rounded-lg">
-                  <RotateCcw size={12} /> รีเซ็ต
+                  <MdRestartAlt size={12} /> รีเซ็ต
                 </button>
               </div>
 
@@ -442,10 +567,8 @@ export default function SettingsPage() {
                     return (
                       <div key={key} className={`flex items-center gap-2 p-2.5 rounded-xl border ${changed ? 'border-accent/40 bg-accent/5' : 'border-gray-100'}`}>
                         <span className="text-xs text-gray-600 flex-1 truncate">{labels[key] ?? key}</span>
-                        <input type="number" min={0} step={10} value={val}
-                          onChange={e => setSurfaceOv(p => ({ ...p, [key]: Number(e.target.value) }))}
-                          className="w-20 text-xs text-right px-2 py-1 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-accent/30" />
-                        <span className="text-[10px] text-gray-400 flex-shrink-0">฿</span>
+                        <NumberStepper value={val} step={10} min={0} max={50000} unit="฿"
+                          onChange={v => setSurfaceOv(p => ({ ...p, [key]: v }))} />
                       </div>
                     )
                   })}
@@ -465,10 +588,8 @@ export default function SettingsPage() {
                     return (
                       <div key={key} className={`flex items-center gap-2 p-2.5 rounded-xl border ${changed ? 'border-accent/40 bg-accent/5' : 'border-gray-100'}`}>
                         <span className="text-xs text-gray-600 flex-1">{labels[key] ?? key}</span>
-                        <input type="number" min={0} step={1} value={val}
-                          onChange={e => setEdgeOv(p => ({ ...p, [key]: Number(e.target.value) }))}
-                          className="w-16 text-xs text-right px-2 py-1 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-accent/30" />
-                        <span className="text-[10px] text-gray-400 flex-shrink-0">฿</span>
+                        <NumberStepper value={val} step={1} min={0} max={5000} unit="฿"
+                          onChange={v => setEdgeOv(p => ({ ...p, [key]: v }))} />
                       </div>
                     )
                   })}
@@ -494,11 +615,9 @@ export default function SettingsPage() {
                     return (
                       <div key={key} className={`flex items-center gap-3 p-2.5 rounded-xl border ${changed ? 'border-accent/40 bg-accent/5' : 'border-gray-100'}`}>
                         <span className="text-xs text-gray-600 flex-1">{label}</span>
-                        <span className="text-[10px] text-gray-300">(ค่าเริ่มต้น: {def}฿)</span>
-                        <input type="number" min={0} step={5} value={val}
-                          onChange={e => setLaborOv(p => ({ ...p, [key]: Number(e.target.value) }))}
-                          className="w-20 text-xs text-right px-2 py-1 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-accent/30" />
-                        <span className="text-[10px] text-gray-400 flex-shrink-0">฿</span>
+                        <span className="text-[10px] text-gray-400 hidden sm:inline">(default: {def}฿)</span>
+                        <NumberStepper value={val} step={5} min={0} max={50000} unit="฿"
+                          onChange={v => setLaborOv(p => ({ ...p, [key]: v }))} />
                       </div>
                     )
                   })}
@@ -521,10 +640,8 @@ export default function SettingsPage() {
                     return (
                       <div key={key} className={`flex items-center gap-2 p-2.5 rounded-xl border ${changed ? 'border-accent/40 bg-accent/5' : 'border-gray-100'}`}>
                         <span className="text-xs text-gray-600 flex-1">{label}</span>
-                        <input type="number" min={0} step={10} value={val}
-                          onChange={e => setInstallOv(p => ({ ...p, [key]: Number(e.target.value) }))}
-                          className="w-20 text-xs text-right px-2 py-1 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-accent/30" />
-                        <span className="text-[10px] text-gray-400 flex-shrink-0">฿</span>
+                        <NumberStepper value={val} step={10} min={0} max={50000} unit="฿"
+                          onChange={v => setInstallOv(p => ({ ...p, [key]: v }))} />
                       </div>
                     )
                   })}
@@ -533,7 +650,7 @@ export default function SettingsPage() {
 
               <button onClick={savePrices}
                 className="flex items-center gap-2 px-5 py-2.5 gold-gradient text-primary text-sm font-semibold rounded-xl hover:shadow-gold transition-all">
-                <Save size={14} /> บันทึกราคาวัสดุ
+                <MdSave size={14} /> บันทึกราคาวัสดุ
               </button>
             </div>
           )}
@@ -549,7 +666,7 @@ export default function SettingsPage() {
               {/* Step-by-step guide */}
               <div className="rounded-2xl border border-gray-100 overflow-hidden">
                 <div className="bg-gray-50 px-4 py-3 flex items-center gap-2">
-                  <Zap size={14} className="text-accent" />
+                  <MdBolt size={14} className="text-accent" />
                   <p className="text-xs font-semibold text-gray-700">วิธีตั้งค่า (ทำครั้งเดียว)</p>
                 </div>
                 <div className="p-4 space-y-3">
@@ -579,14 +696,14 @@ export default function SettingsPage() {
                   <div className="flex gap-2">
                     <button onClick={() => setShowCode(v => !v)}
                       className="flex items-center gap-1 text-xs text-gray-400 hover:text-white transition-colors">
-                      {showCode ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                      {showCode ? <MdExpandLess size={12} /> : <MdExpandMore size={12} />}
                       {showCode ? 'ซ่อน' : 'ดูโค้ด'}
                     </button>
                     <button onClick={copyCode}
                       className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
-                        codeCopied ? 'bg-success text-white' : 'bg-accent text-primary hover:bg-accent/90'
+                        codeCopied ? 'bg-success text-white' : 'bg-accent text-white hover:bg-accent/90'
                       }`}>
-                      <Copy size={11} /> {codeCopied ? 'Copied!' : 'Copy Code'}
+                      <MdContentCopy size={11} /> {codeCopied ? 'Copied!' : 'Copy Code'}
                     </button>
                   </div>
                 </div>
@@ -635,7 +752,7 @@ export default function SettingsPage() {
 
               {testResult && (
                 <div className={`flex items-center gap-2 p-3 rounded-xl text-sm ${testResult.ok ? 'bg-success/10 text-success' : 'bg-danger/10 text-danger'}`}>
-                  {testResult.ok ? <CheckCircle size={15} /> : <XCircle size={15} />}
+                  {testResult.ok ? <MdCheckCircle size={15} /> : <MdCancel size={15} />}
                   {testResult.message}
                 </div>
               )}
@@ -643,20 +760,20 @@ export default function SettingsPage() {
               <div className="flex flex-wrap gap-2">
                 <button onClick={testSheets} disabled={testing}
                   className="flex items-center gap-2 px-4 py-2.5 border border-accent text-accent text-sm font-medium rounded-xl hover:bg-accent/5 transition-colors disabled:opacity-60">
-                  {testing ? <Loader2 size={14} className="animate-spin" /> : <Link2 size={14} />} ทดสอบ
+                  {testing ? <MdRefresh size={14} className="animate-spin" /> : <MdLink size={14} />} ทดสอบ
                 </button>
                 <button onClick={syncNow} disabled={syncing}
                   className="flex items-center gap-2 px-4 py-2.5 border border-gray-200 text-gray-600 text-sm font-medium rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-60">
-                  {syncing ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
+                  {syncing ? <MdRefresh size={14} className="animate-spin" /> : <MdRefresh size={14} />}
                   Sync Stock ตอนนี้
                 </button>
                 <button onClick={saveSheets}
                   className="flex items-center gap-2 px-4 py-2.5 gold-gradient text-primary text-sm font-semibold rounded-xl hover:shadow-gold transition-all">
-                  <Save size={14} /> บันทึก
+                  <MdSave size={14} /> บันทึก
                 </button>
                 <a href="https://script.google.com" target="_blank" rel="noreferrer"
                   className="flex items-center gap-1.5 px-3 py-2.5 text-xs text-gray-500 hover:text-primary transition-colors">
-                  <ExternalLink size={12} /> เปิด Apps Script
+                  <MdOpenInNew size={12} /> เปิด Apps Script
                 </a>
               </div>
             </div>
@@ -669,7 +786,7 @@ export default function SettingsPage() {
               {/* Header */}
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-[#06C755] flex items-center justify-center flex-shrink-0">
-                  <MessageCircle size={20} className="text-white" />
+                  <MdChat size={20} className="text-white" />
                 </div>
                 <div>
                   <h2 className="font-bold text-primary text-base">LINE Messaging API</h2>
@@ -698,7 +815,7 @@ export default function SettingsPage() {
               {/* Setup guide */}
               <div className="rounded-2xl border border-green-100 bg-green-50/40 overflow-hidden">
                 <div className="px-4 py-3 bg-green-50 border-b border-green-100 flex items-center gap-2">
-                  <Zap size={13} className="text-green-600" />
+                  <MdBolt size={13} className="text-green-600" />
                   <p className="text-xs font-bold text-green-800">วิธีตั้งค่า LINE Messaging API (ทำครั้งเดียว)</p>
                 </div>
                 <div className="p-4 space-y-4">
@@ -739,7 +856,7 @@ export default function SettingsPage() {
                         {s.link && (
                           <a href={s.link} target="_blank" rel="noreferrer"
                             className="inline-flex items-center gap-1 mt-1.5 text-xs text-green-600 font-medium hover:text-green-800 underline-offset-2 hover:underline transition-colors">
-                            <ExternalLink size={10} /> {s.lbl}
+                            <MdOpenInNew size={10} /> {s.lbl}
                           </a>
                         )}
                       </div>
@@ -769,7 +886,7 @@ export default function SettingsPage() {
                       </button>
                       {lineToken && (
                         <button onClick={() => setLineToken('')} className="text-gray-300 hover:text-danger">
-                          <X size={13} />
+                          <MdClose size={13} />
                         </button>
                       )}
                     </div>
@@ -800,7 +917,7 @@ export default function SettingsPage() {
                     ? 'bg-green-50 text-green-700 border border-green-200'
                     : 'bg-danger/10 text-danger border border-danger/20'
                 }`}>
-                  {lineResult.ok ? <CheckCircle size={15} /> : <XCircle size={15} />}
+                  {lineResult.ok ? <MdCheckCircle size={15} /> : <MdCancel size={15} />}
                   {lineResult.message}
                 </div>
               )}
@@ -833,7 +950,7 @@ export default function SettingsPage() {
               {lineToken && (
                 <div className="rounded-xl border border-[#06C755]/25 bg-[#06C755]/5 p-4">
                   <p className="text-xs font-semibold text-gray-600 mb-2.5 flex items-center gap-1.5">
-                    <MessageCircle size={12} className="text-[#06C755]" /> ตัวอย่างข้อความที่จะได้รับ
+                    <MdChat size={12} className="text-[#06C755]" /> ตัวอย่างข้อความที่จะได้รับ
                   </p>
                   <div className="bg-white rounded-2xl p-3.5 shadow-sm border border-gray-100 text-xs text-gray-700 whitespace-pre-line leading-relaxed font-mono">
                     {`🏠 MERIDIAN ROOM\n━━━━━━━━━━━━━━━━━━━━\n📋 โปรเจกต์ใหม่: Walk-in Closet VIP\n👤 ลูกค้า: คุณสมชาย วงษ์สุวรรณ\n💰 ราคา: ฿385,000\n📊 Margin: 38.5%\n📅 ${new Date().toLocaleDateString('th-TH', { dateStyle: 'long' })}`}
@@ -847,12 +964,12 @@ export default function SettingsPage() {
               <div className="flex gap-2">
                 <button onClick={testLine} disabled={lineTesting || !lineToken}
                   className="flex items-center gap-2 px-4 py-2.5 bg-[#06C755] text-white text-sm font-semibold rounded-xl hover:bg-green-600 transition-colors disabled:opacity-50">
-                  {lineTesting ? <Loader2 size={14} className="animate-spin" /> : <MessageCircle size={14} />}
+                  {lineTesting ? <MdRefresh size={14} className="animate-spin" /> : <MdChat size={14} />}
                   ส่งทดสอบ
                 </button>
                 <button onClick={saveLineSettings}
                   className="flex items-center gap-2 px-4 py-2.5 gold-gradient text-primary text-sm font-semibold rounded-xl hover:shadow-gold transition-all">
-                  <Save size={14} /> บันทึก
+                  <MdSave size={14} /> บันทึก
                 </button>
               </div>
             </div>
@@ -880,7 +997,7 @@ export default function SettingsPage() {
               ))}
               <button onClick={saveNotiPrefs}
                 className="flex items-center gap-2 px-4 py-2.5 gold-gradient text-primary text-sm font-semibold rounded-xl hover:shadow-gold transition-all mt-2">
-                <Save size={14} /> บันทึก
+                <MdSave size={14} /> บันทึก
               </button>
             </div>
           )}

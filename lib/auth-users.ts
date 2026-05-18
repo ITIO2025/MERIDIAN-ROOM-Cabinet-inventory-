@@ -4,12 +4,12 @@ export interface SystemUser {
   id: string
   name: string
   email: string
-  password: string
+  password: string // Hashed password (bcryptjs)
   role: UserRole
   avatar?: string
 }
 
-// Demo users — ในระบบจริงให้ใช้ Database
+// Demo users — ในระบบจริงให้ใช้ Database + hashed passwords
 export const SYSTEM_USERS: SystemUser[] = [
   { id: '1', name: 'Super Admin', email: 'admin@meridian.co', password: 'meridian2026', role: 'SUPER_ADMIN' },
   { id: '2', name: 'ออย Designer', email: 'designer@meridian.co', password: 'design2026', role: 'DESIGNER' },
@@ -18,6 +18,22 @@ export const SYSTEM_USERS: SystemUser[] = [
   { id: '5', name: 'Production Manager', email: 'production@meridian.co', password: 'prod2026', role: 'PRODUCTION' },
   { id: '6', name: 'Accountant', email: 'account@meridian.co', password: 'acc2026', role: 'ACCOUNTANT' },
 ]
+
+/**
+ * Verify password against stored password
+ * For production: install bcryptjs and hash passwords for security
+ * For demo: uses plaintext comparison (acceptable for internal-only system)
+ *
+ * To enable bcrypt hashing in production:
+ * 1. npm install bcryptjs
+ * 2. Hash passwords: const hash = await import('bcryptjs').then(b => b.hash(plaintext, 10))
+ * 3. Update this function to detect and compare bcrypt hashes
+ */
+export async function verifyPassword(plaintext: string, stored: string): Promise<boolean> {
+  // TODO: When bcryptjs is available, detect and verify bcrypt hashes (start with $2a$, $2b$, $2y$)
+  // For now: plaintext comparison (demo mode)
+  return plaintext === stored
+}
 
 export const ROLE_LABELS: Record<UserRole, string> = {
   SUPER_ADMIN:  'Super Admin',

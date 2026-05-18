@@ -1,7 +1,7 @@
 import GoogleProvider from 'next-auth/providers/google'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import type { NextAuthOptions } from 'next-auth'
-import { SYSTEM_USERS } from './auth-users'
+import { SYSTEM_USERS, verifyPassword } from './auth-users'
 import type { UserRole } from '@/types/next-auth'
 
 export const authOptions: NextAuthOptions = {
@@ -19,10 +19,10 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null
-        const user = SYSTEM_USERS.find(
-          u => u.email === credentials.email && u.password === credentials.password
-        )
+        const user = SYSTEM_USERS.find(u => u.email === credentials.email)
         if (!user) return null
+        const isValid = await verifyPassword(credentials.password, user.password)
+        if (!isValid) return null
         return { id: user.id, name: user.name, email: user.email, role: user.role }
       },
     }),
